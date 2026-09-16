@@ -1,0 +1,4 @@
+interface:
+  display_name: "必火AI智能剪辑"
+  short_description: "将数字人视频交给必火AI智能剪辑，持续查询任务并下载最终成片"
+  default_prompt: "Use $bihuoai-smart-clip to 把一条数字人视频制作成智能剪辑成片。"

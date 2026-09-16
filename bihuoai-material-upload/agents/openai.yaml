@@ -1,0 +1,4 @@
+interface:
+  display_name: "必火AI素材上传"
+  short_description: "上传图片、音频、视频或临时文件，并返回可复用的必火AI素材 URL"
+  default_prompt: "Use $bihuoai-material-upload to 检查并上传一个本地素材文件，返回可用于必火AI工作流的 URL。"

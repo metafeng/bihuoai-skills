@@ -1,0 +1,14 @@
+.DS_Store
+.env
+.env.*
+.bihuoai-skills/
+node_modules/
+*.mp4
+*.mov
+*.m4v
+*.mp3
+*.wav
+*.aac
+*状态*.json
+*任务*.json
+*.log

@@ -1,0 +1,4 @@
+interface:
+  display_name: "必火AI数字人合成"
+  short_description: "规范中文 TTS 朗读文本，并创建数字人口播视频"
+  default_prompt: "Use $bihuoai-digital-human to 先生成适合中文 TTS 的朗读版文案，再创建一条必火AI数字人口播视频。"
