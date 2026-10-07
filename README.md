@@ -26,9 +26,11 @@
 
 ## 服务地址
 
-- 工作台：`https://agent.bihuoai.com`
+- 必火全员IP营销平台：[https://agent.bihuoai.com](https://agent.bihuoai.com)
 - 主接口：`https://ai-api.aigcoem.com/v1`
 - 智能剪辑：`https://ai-api.aigcoem.com/v1/ai-cut`
+
+必火AI Open Key（API Key）需要登录[必火全员IP营销平台](https://agent.bihuoai.com)获取。本仓库不提供公共Key，也不要使用其他人的Key。
 
 接口仍可能随平台升级而变化。出现登录正常但 API 返回异常时，应重新核对浏览器网络请求和当前前端资源。
 
@@ -68,6 +70,8 @@ done
 Claude Code 和 WorkBuddy 可分别链接到 `~/.claude/skills`、`~/.workbuddy/skills`。如果目标位置已存在同名目录，请先检查，不要直接覆盖。
 
 ## 配置 Open Key
+
+先登录[必火全员IP营销平台](https://agent.bihuoai.com)获取自己账号的 Open Key（API Key），再保存到本机私有配置。
 
 Open Key 只保存在用户私有目录，不要写入仓库：
 
