@@ -94,3 +94,12 @@ test("resolves private cover assets by default, alias, number, and name", () => 
   assert.equal(resolveCoverAssets("企业AI化三层地基", catalog)[0].url, "https://example.com/case-01.png");
   assert.throws(() => resolveCoverAssets("不存在的素材", catalog), /没有找到/);
 });
+
+test("default asset selection never adds a historical cover implicitly", () => {
+  const catalog = buildCoverAssetCatalog({
+    cover_default_background: "hangzhou",
+    cover_background_hangzhou_url: "https://example.com/hangzhou.jpg",
+    cover_case_01_url: "https://example.com/case-01.png",
+  });
+  assert.deepEqual(resolveCoverAssets("default", catalog).map((item) => item.key), ["hangzhou"]);
+});

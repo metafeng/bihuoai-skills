@@ -162,12 +162,14 @@ node bihuoai-material-upload/scripts/main.mjs upload \
 
 ### 3. 视频封面
 
+默认使用“人物/视频底图 + 标题提示词”自主设计封面，不需要成品封面参考，也不会因为私有配置里存在历史案例就自动加入。历史封面只在用户明确要求参考、复刻、沿用或模仿某一张时使用。
+
 先预演模型、参数和费用；预演不会上传图片或创建任务：
 
 ```bash
 node bihuoai-video-cover/scripts/main.mjs generate \
   --prompt-file ./cover-prompt.txt \
-  --reference ./人物底图.jpg \
+  --asset default \
   --ratio 9:16 \
   --dry-run
 ```
@@ -177,11 +179,12 @@ node bihuoai-video-cover/scripts/main.mjs generate \
 ```bash
 node bihuoai-video-cover/scripts/main.mjs generate \
   --prompt-file ./cover-prompt.txt \
-  --reference ./人物底图.jpg \
-  --reference ./官方Logo.png \
+  --asset default \
   --confirm-generate \
   --output ./视频封面.png
 ```
+
+如果底图没有配置到EXTEND.md，也可以使用 `--reference ./人物底图.jpg` 明确传入本地底图。Logo、产品截图和风格参考均为可选素材，不应为了凑素材而添加。
 
 默认优先使用 `image-2`。只有Image 2明确失败或成功却无图片URL，且不是余额、权限、审核或参数问题时，才自动创建一次 `qwen-image-3.0-pro` 备用任务。公共Skill不附带任何个人照片或默认人物素材。
 
@@ -191,14 +194,14 @@ node bihuoai-video-cover/scripts/main.mjs generate \
 # 只使用 Image 2
 node bihuoai-video-cover/scripts/main.mjs generate \
   --prompt-file ./cover-prompt.txt \
-  --reference ./人物底图.jpg \
+  --asset default \
   --model image-2 \
   --dry-run
 
 # 只使用千问3.0 Pro，默认使用2K
 node bihuoai-video-cover/scripts/main.mjs generate \
   --prompt-file ./cover-prompt.txt \
-  --reference ./人物底图.jpg \
+  --asset default \
   --model qwen-image-3.0-pro \
   --image-size 2K \
   --dry-run
@@ -206,7 +209,7 @@ node bihuoai-video-cover/scripts/main.mjs generate \
 
 确认预演中的 `modelOrder`、`imageSize` 和费用后，把 `--dry-run` 换成 `--confirm-generate` 并增加 `--output`。省略 `--model` 时仍执行Image 2优先的默认策略。
 
-个人默认背景和历史案例可以只写入私有 `~/.bihuoai-skills/bihuoai-digital-human/EXTEND.md` 的 `cover_` 字段，不提交到仓库。完整字段和更换方法见[私有扩展配置模板](./EXTEND.md)。运行 `node bihuoai-video-cover/scripts/main.mjs assets` 查看已配置素材，生成时使用 `--asset default`、`--asset 杭州背景` 或 `--asset 历史封面1` 等名称选择。
+个人默认底图和可选历史案例可以写入私有 `~/.bihuoai-skills/bihuoai-digital-human/EXTEND.md` 的 `cover_` 字段，不提交到仓库。完整字段和更换方法见[私有扩展配置模板](./EXTEND.md)。运行 `node bihuoai-video-cover/scripts/main.mjs assets` 查看已配置素材。普通生成只使用 `--asset default` 或明确选择的底图；`--asset 历史封面1` 仅在用户主动要求参考该案例时使用。
 
 ### 4. 数字人合成
 

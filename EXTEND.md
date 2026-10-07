@@ -20,7 +20,7 @@ tts_normalize: true
 # cover_background_course_name: 课程现场背景封面
 # cover_background_course_url: https://example.com/your-course-background.png
 
-# 历史封面只用于版式和配色参考。编号支持01至09。
+# 历史封面是可选素材，只在用户明确要求参考某张封面时使用。编号支持01至09。
 # cover_case_01_name: 我的历史封面1
 # cover_case_01_url: https://example.com/your-cover-case-01.png
 # cover_case_02_name: 我的历史封面2
@@ -76,10 +76,15 @@ node bihuoai-video-cover/scripts/main.mjs assets
 --asset default
 --asset 杭州背景
 --asset 摄影棚背景
---asset 历史封面1
 ```
 
 如果更换默认底图，只修改 `cover_default_background`，例如 `hangzhou`、`studio` 或 `course`。不要把包含个人照片、私人 OSS 地址、形象 ID、声音 ID 或 Open Key 的私有 EXTEND.md 提交到 Git 仓库。
+
+普通封面生成默认只使用底图和提示词，不会自动使用历史封面。只有明确需要参考某张案例时才额外增加，例如：
+
+```bash
+--asset default --asset 历史封面1
+```
 
 ## 如何切换封面模型
 
