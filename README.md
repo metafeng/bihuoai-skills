@@ -1,6 +1,6 @@
 # 必火AI Skills
 
-面向必火AI的一套视频生产 Skills，将链接提取、素材上传、数字人合成、智能剪辑和视频发布拆分为独立能力，并提供可恢复的一站式编排流程。
+面向必火AI的一套视频生产 Skills，将链接提取、素材上传、视频封面、数字人合成、智能剪辑和视频发布拆分为独立能力，并提供可恢复的一站式编排流程。
 
 > 本仓库不包含 Open Key、Cookie、生成视频或发布凭证。使用前需要配置自己的必火AI Open Key。
 
@@ -10,6 +10,7 @@
 | --- | --- | --- |
 | `bihuoai-link-extract` | 必火AI链接提取 | 提取视频口播文稿，并结合上下文校正 AI 术语 |
 | `bihuoai-material-upload` | 必火AI素材上传 | 上传本地图片、音频、视频或临时文件并返回素材 URL |
+| `bihuoai-video-cover` | 必火AI视频封面 | 使用必火AI图片模型制作中文大字短视频封面，支持指定Image 2或千问3.0 Pro（默认2K） |
 | `bihuoai-digital-human` | 必火AI数字人合成 | 规范中文 TTS 朗读文本，创建数字人视频并下载成片 |
 | `bihuoai-smart-clip` | 必火AI智能剪辑 | 查询模板，将数字人作品生成智能剪辑成片 |
 | `bihuoai-publish` | 必火AI视频发布 | 查询发布账号、保存草稿、正式或定时发布 |
@@ -20,6 +21,7 @@
 ```text
 视频分享链接 → 链接提取（可选） → 数字人合成 → 智能剪辑（可选） → 视频发布（可选）
 本地素材文件 → 素材上传 → 素材 URL → 数字人 / 智能剪辑 / 视频发布
+人物/底图 + 标题 → 视频封面 → 封面文件 / 封面 URL → 视频发布（可选）
 ```
 
 ## 服务地址
@@ -46,13 +48,14 @@ git clone git@github.com:metafeng/bihuoai-skills.git
 cd bihuoai-skills
 ```
 
-建议保留本仓库作为唯一维护源，再把六个 Skill 软链接到客户端目录。以 Codex 为例：
+建议保留本仓库作为唯一维护源，再把七个 Skill 软链接到客户端目录。以 Codex 为例：
 
 ```bash
 mkdir -p ~/.codex/skills
 for skill in \
   bihuoai-link-extract \
   bihuoai-material-upload \
+  bihuoai-video-cover \
   bihuoai-digital-human \
   bihuoai-smart-clip \
   bihuoai-publish \
@@ -81,7 +84,7 @@ chmod 600 ~/.bihuoai-skills/.env
 BIHUOAI_OPEN_KEY=你的OpenKey
 ```
 
-六个 Skill 只读取 `BIHUOAI_OPEN_KEY`，并发送请求头 `x-open-key`。也可以在单次命令使用 `--open-key`，但应避免让凭证进入终端历史。不支持其他认证变量或请求头。
+七个 Skill 只读取 `BIHUOAI_OPEN_KEY`，并发送请求头 `x-open-key`。也可以在单次命令使用 `--open-key`，但应避免让凭证进入终端历史。不支持其他认证变量或请求头。
 
 也可以按需覆盖接口：
 
@@ -113,6 +116,8 @@ tts_normalize: true
 avatar_voice_12345: voice_该形象专用的声音ID
 ---
 ```
+
+仓库提供了不含个人数据的完整模板：[EXTEND.md](./EXTEND.md)。可以复制到上述私有路径，再填写自己的形象、声音、封面底图和历史封面URL。私有文件建议设置为 `chmod 600`，不要提交回仓库。
 
 示例中的 ID 和名称必须替换为 `list-avatars`、`list-voices` 返回的当前账号资源。`avatar_voice_<形象ID>` 可以让指定形象自动使用专用声音；没有映射时使用全局默认声音。优先级为：命令参数 > 形象专用声音映射 > EXTEND.md 全局默认 > 环境变量。公共 Skill 不内置任何用户的形象或声音，迁移账号或平台升级后应重新核验。
 
@@ -155,7 +160,55 @@ node bihuoai-material-upload/scripts/main.mjs upload \
 
 脚本会自动判断图片、音频、视频或临时文件，计算 MD5，优先使用秒传；未命中时再流式上传到 OSS。成功输出的 `url` 可以直接交给数字人、剪辑或发布 Skill。临时签名字段不会写入命令输出。
 
-### 3. 数字人合成
+### 3. 视频封面
+
+先预演模型、参数和费用；预演不会上传图片或创建任务：
+
+```bash
+node bihuoai-video-cover/scripts/main.mjs generate \
+  --prompt-file ./cover-prompt.txt \
+  --reference ./人物底图.jpg \
+  --ratio 9:16 \
+  --dry-run
+```
+
+确认后上传明确列出的参考图、生成并下载封面：
+
+```bash
+node bihuoai-video-cover/scripts/main.mjs generate \
+  --prompt-file ./cover-prompt.txt \
+  --reference ./人物底图.jpg \
+  --reference ./官方Logo.png \
+  --confirm-generate \
+  --output ./视频封面.png
+```
+
+默认优先使用 `image-2`。只有Image 2明确失败或成功却无图片URL，且不是余额、权限、审核或参数问题时，才自动创建一次 `qwen-image-3.0-pro` 备用任务。公共Skill不附带任何个人照片或默认人物素材。
+
+需要固定模型做效果对比时，可以显式指定。指定后只创建该模型的一次任务，不会先调用另一个模型：
+
+```bash
+# 只使用 Image 2
+node bihuoai-video-cover/scripts/main.mjs generate \
+  --prompt-file ./cover-prompt.txt \
+  --reference ./人物底图.jpg \
+  --model image-2 \
+  --dry-run
+
+# 只使用千问3.0 Pro，默认使用2K
+node bihuoai-video-cover/scripts/main.mjs generate \
+  --prompt-file ./cover-prompt.txt \
+  --reference ./人物底图.jpg \
+  --model qwen-image-3.0-pro \
+  --image-size 2K \
+  --dry-run
+```
+
+确认预演中的 `modelOrder`、`imageSize` 和费用后，把 `--dry-run` 换成 `--confirm-generate` 并增加 `--output`。省略 `--model` 时仍执行Image 2优先的默认策略。
+
+个人默认背景和历史案例可以只写入私有 `~/.bihuoai-skills/bihuoai-digital-human/EXTEND.md` 的 `cover_` 字段，不提交到仓库。完整字段和更换方法见[私有扩展配置模板](./EXTEND.md)。运行 `node bihuoai-video-cover/scripts/main.mjs assets` 查看已配置素材，生成时使用 `--asset default`、`--asset 杭州背景` 或 `--asset 历史封面1` 等名称选择。
+
+### 4. 数字人合成
 
 先查询当前账号资源：
 
@@ -193,7 +246,7 @@ node bihuoai-digital-human/scripts/main.mjs create \
   --download ./数字人成片.mp4
 ```
 
-### 4. 智能剪辑
+### 5. 智能剪辑
 
 ```bash
 node bihuoai-smart-clip/scripts/main.mjs list-templates
@@ -207,7 +260,7 @@ node bihuoai-smart-clip/scripts/main.mjs create \
 
 如果任务返回状态 `5`，表示等待人工确认。不得默认确认，应先检查后再使用 `confirm-review --confirm-review`。
 
-### 5. 视频发布
+### 6. 视频发布
 
 先查询平台和已绑定账号：
 
@@ -227,7 +280,7 @@ node bihuoai-publish/scripts/main.mjs publish \
   --confirm-publish
 ```
 
-### 6. 视频全流程
+### 7. 视频全流程
 
 建议使用状态文件，避免中断后重复消耗算力：
 
@@ -249,6 +302,7 @@ node bihuoai-video-pipeline/scripts/main.mjs run \
 
 - 链接提取必须显式增加 `--confirm-extract`。
 - 素材上传必须显式增加 `--confirm-upload`。
+- 视频封面生成必须显式增加 `--confirm-generate`；成功生成后不会自动再生第二版。
 - 数字人合成必须显式增加 `--confirm-create`。
 - 智能剪辑必须显式增加 `--confirm-clip`。
 - 正式发布必须显式增加 `--confirm-publish`。
@@ -260,9 +314,13 @@ node bihuoai-video-pipeline/scripts/main.mjs run \
 
 ```text
 .
+├── EXTEND.md
 ├── bihuoai-link-extract/
 │   └── references/ai-terminology.md
 ├── bihuoai-material-upload/
+│   ├── references/api.md
+│   └── scripts/main.mjs
+├── bihuoai-video-cover/
 │   ├── references/api.md
 │   └── scripts/main.mjs
 ├── bihuoai-digital-human/
@@ -275,7 +333,7 @@ node bihuoai-video-pipeline/scripts/main.mjs run \
     └── scripts/bihuo-client.mjs
 ```
 
-五个业务 Skill 共用 `bihuoai-video-pipeline/scripts/bihuo-client.mjs`，因此六个目录应作为一整套安装和更新。
+六个业务 Skill 共用 `bihuoai-video-pipeline/scripts/bihuo-client.mjs`，因此七个目录应作为一整套安装和更新。
 
 ## 校验
 

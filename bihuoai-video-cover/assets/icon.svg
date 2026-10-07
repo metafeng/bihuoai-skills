@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Video Cover">
+  <defs>
+    <linearGradient id="bg" x1="32" y1="224" x2="224" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F172A"/>
+      <stop offset="0.48" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#67E8F9"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="56" y1="58" x2="200" y2="198" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#BAE6FD" stop-opacity="0.58"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="url(#bg)"/>
+  <rect x="55" y="36" width="146" height="184" rx="22" fill="none" stroke="#DBEAFE" stroke-width="10"/>
+  <path d="M88 82c0-22 18-40 40-40s40 18 40 40-18 40-40 40-40-18-40-40Z" fill="url(#panel)"/>
+  <path d="M75 187c7-32 28-52 53-52s46 20 53 52" fill="none" stroke="#ECFEFF" stroke-width="15" stroke-linecap="round"/>
+  <path d="M66 158h124M75 184h106" stroke="#0EA5E9" stroke-width="14" stroke-linecap="round"/>
+  <path d="M194 64l12-22M209 83l24-7M197 105l18 17" stroke="#A5F3FC" stroke-width="8" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,9 @@
+interface:
+  display_name: "必火AI视频封面"
+  short_description: "用必火AI生图模型制作中文大字短视频封面，支持人物、Logo和截图参考"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  brand_color: "#E53935"
+  default_prompt: "用 $bihuoai-video-cover，把我上传的人物或视频底图、标题和补充素材制作成一张9:16短视频封面。"
+policy:
+  allow_implicit_invocation: true
