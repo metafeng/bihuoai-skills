@@ -1,6 +1,6 @@
 ---
 name: bihuoai-video-cover
-description: 使用必火AI图片生成接口，默认以人物或视频底图加提示词制作9:16中文短视频封面；参考封面仅在用户明确要求时加入。适用于视频号封面、口播封面和短视频缩略图，支持Image 2和千问3.0 Pro。
+description: 使用必火AI图片生成接口，默认以人物或视频底图加提示词制作9:16中文短视频封面；参考封面仅在用户明确要求时加入。适用于视频号封面、口播封面和短视频缩略图，默认依次使用Image 2.5 Sunburst、Image 2.5 Flare和千问3.0 Pro。
 ---
 
 # 必火AI视频封面
@@ -85,13 +85,14 @@ node "$SKILL_DIR/scripts/main.mjs" assets
 
 ## 必火AI模型策略
 
-1. 首选模型固定为 `image-2`（Image 2）。
-2. 备用模型固定为 `qwen-image-3.0-pro`（千问3.0 Pro），默认2K。
-3. 用户明确要求指定模型做效果对比时，可以使用 `--model image-2` 或 `--model qwen-image-3.0-pro`，只创建该模型的一次任务；未指定时仍按默认顺序执行。
-4. 创建前读取 `/ai-media/model-options`；Image 2未开放或被禁用时直接使用千问3.0 Pro。
-5. Image 2任务已明确失败，或成功状态却没有图片URL时，且失败不是余额、额度、权限、认证、内容审核或参数问题，自动创建 **1次** 千问3.0 Pro备用任务。
-6. 轮询超时、网络状态不明或任务仍在处理中时不得自动降级，避免首个任务稍后成功造成重复扣费。
-7. Image 2已经生成图片但画面质量不理想，不属于“没有生成”；先交付并说明问题。只有用户要求修改时才创建新的付费任务。
+1. 首选模型固定为 `gpt-image-2.5-sunburst`（Image 2.5 Sunburst）。
+2. 第二顺位模型固定为 `gpt-image-2.5-flare`（Image 2.5 Flare）。
+3. 最后顺位模型固定为 `qwen-image-3.0-pro`（千问3.0 Pro），默认2K。
+4. 用户明确要求指定模型做效果对比时，可以使用 `--model gpt-image-2.5-sunburst`、`--model gpt-image-2.5-flare` 或 `--model qwen-image-3.0-pro`；指定后只创建该模型的一次任务。
+5. 创建前读取 `/ai-media/model-options`；某个模型未开放或被禁用时跳过它，继续使用下一个已开放模型。
+6. 当前模型明确失败，或成功状态却没有图片URL时，且失败不是余额、额度、权限、认证、内容审核或参数问题，才按上述顺序创建下一个模型任务。自动链路最多尝试3个模型。
+7. 轮询超时、网络状态不明或任务仍在处理中时不得自动降级，避免前一任务稍后成功造成重复扣费。
+8. 任一模型已经生成图片但画面质量不理想，不属于“没有生成”；先交付并说明问题。只有用户要求修改时才创建新的付费任务。
 
 完整接口字段和状态见 [必火AI生图接口](references/api.md)。
 
@@ -112,7 +113,7 @@ node "$SKILL_DIR/scripts/main.mjs" generate \
 2. 运行 `assets` 查看私有素材。默认只选择人物/视频底图；若已配置默认底图，使用 `--asset default`。用 `view_image` 查看本地图片。不要因为存在历史案例就自动使用；仅在用户明确要求参考某张封面时才按名称加入，并且不能把案例当作当前事实。最多选3张用户明确需要的素材。
 3. 读取 [固定母提示词](references/master-prompt.md)，填入有效字段并删除空字段。图片编号和用途必须与 `--reference` 顺序一致。
 4. 把完整提示词保存到当前工作区的临时文本文件，不把Open Key写入文件。
-5. 先预演。预演会检查本地参考图、读取当前模型配置并查询两个模型的费用预估，不上传、不创建任务：
+5. 先预演。预演会检查本地参考图、读取当前模型配置并查询三个模型的费用预估，不上传、不创建任务：
 
 ```bash
 SKILL_DIR="${BIHUOAI_SKILLS_HOME:-$HOME/.agents/skills}/bihuoai-video-cover"
@@ -124,14 +125,12 @@ node "$SKILL_DIR/scripts/main.mjs" generate \
   --dry-run
 ```
 
-6. 用户已明确要求生成后，执行真实任务。`--confirm-generate`同时授权上传命令中明确列出的参考图和创建本次最多两次模型尝试；不得扫描或上传其他文件：
+6. 用户已明确要求生成后，执行真实任务。`--confirm-generate`同时授权上传命令中明确列出的参考图和按安全降级规则创建本次最多三次模型尝试；不得扫描或上传其他文件：
 
 ```bash
 node "$SKILL_DIR/scripts/main.mjs" generate \
   --prompt-file ./cover-prompt.txt \
   --asset 杭州背景 \
-  --asset 历史封面1 \
-  --reference ./官方Logo.png \
   --ratio 9:16 \
   --confirm-generate \
   --output ./output/video-covers/主题-封面-v1.png
@@ -178,4 +177,4 @@ node "$SKILL_DIR/scripts/main.mjs" generate \
 
 ## 系统集成：可恢复的封面步骤
 
-智能剪辑和一键成片使用 `create --prompt-file ... --asset 底图名称 --confirm-generate --receipt-file 私有回执路径`，立即保存封面任务编号，随后用 `detail --id` 查询并 `download --id --output` 下载。`create` 只提交一个模型，不等待、不自动切换。仅原任务明确失败且符合既有降级规则时，宿主才可用新回执文件提交千问备用模型。提交未知、超时或服务重启时，先读取回执核对原任务，不能重新创建。系统默认使用后台当前底图，可在剪辑页改选；封面主副标题使用用户确认后的文字。
+智能剪辑和一键成片使用 `create --prompt-file ... --asset 底图名称 --confirm-generate --receipt-file 私有回执路径`，立即保存封面任务编号，随后用 `detail --id` 查询并 `download --id --output` 下载。`create` 只提交当前顺位的一个模型，不等待、不自动切换。仅原任务明确失败且符合既有降级规则时，宿主才可用新回执文件按Sunburst → Flare → 千问3.0 Pro顺序提交下一个模型。提交未知、超时或服务重启时，先读取回执核对原任务，不能重新创建。系统默认使用后台当前底图，可在剪辑页改选；封面主副标题使用用户确认后的文字。

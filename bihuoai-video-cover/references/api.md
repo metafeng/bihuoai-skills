@@ -1,6 +1,6 @@
 # 必火AI图片生成接口
 
-核对日期：2026-10-08。接口和模型配置是实时事实，异常时重新对照必火AI工作台请求，不凭本文件猜测。
+核对日期：2026-10-15。接口和模型配置是实时事实，异常时重新对照必火AI工作台请求，不凭本文件猜测。
 
 ## 地址与认证
 
@@ -33,12 +33,23 @@ BIHUOAI_OPEN_KEY=你的OpenKey
 
 ## 封面请求体
 
-Image 2：
+Image 2.5 Sunburst（默认首选）：
 
 ```json
 {
   "prompt": "完整封面提示词",
-  "model": "image-2",
+  "model": "gpt-image-2.5-sunburst",
+  "ratio": "9:16",
+  "referImages": ["https://example.com/person.jpg"]
+}
+```
+
+Image 2.5 Flare（第二顺位）：
+
+```json
+{
+  "prompt": "完整封面提示词",
+  "model": "gpt-image-2.5-flare",
   "ratio": "9:16",
   "referImages": ["https://example.com/person.jpg"]
 }
@@ -57,9 +68,9 @@ Image 2：
 ```
 
 - `prompt`与`model`必填，前端当前限制提示词不超过2000字符。
-- `ratio`默认9:16；当前两个模型也支持1:1、16:9、4:3、3:4。
-- `imageSize`只在模型配置明确返回该字段时发送。Image 2当前不发送；千问3.0 Pro默认2K。
-- CLI可用 `--model image-2` 或 `--model qwen-image-3.0-pro` 显式选择单一模型。指定后只创建该模型任务；省略时才执行Image 2优先、千问安全降级的默认链路。
+- `ratio`默认9:16；当前三个模型也支持1:1、16:9、4:3、3:4。
+- `imageSize`只在模型配置明确返回该字段时发送。Sunburst与Flare当前不发送；千问3.0 Pro默认2K。
+- CLI可用 `--model gpt-image-2.5-sunburst`、`--model gpt-image-2.5-flare` 或 `--model qwen-image-3.0-pro` 显式选择单一模型。指定后只创建该模型任务；省略时执行Sunburst → Flare → 千问3.0 Pro的默认链路。
 - `referImages`可省略。为保证备用模型兼容，本Skill最多传3张。
 
 价格预估使用同一请求体，调用 `/ai-media/price-preview`。返回的 `amount` 单位由当前账号定义，不能擅自解释成人民币。
@@ -72,7 +83,7 @@ Image 2：
 - `2`：失败，查看 `errorMessage`。
 - `4`、`-2`及其他未终结值：排队或处理中。
 
-轮询超时只报告现有任务ID，不重新创建。只有Image 2明确失败或成功却无URL，且不是余额、权限、认证、审核或参数问题时，才自动创建一次千问3.0 Pro任务。
+轮询超时只报告现有任务ID，不重新创建。仅当前模型明确失败或成功却无URL，且不是余额、权限、认证、审核或参数问题时，才按Sunburst → Flare → 千问3.0 Pro顺序创建下一个任务。
 
 当前Open Key创建的任务可能已出现在 `/ai-media/list`，但 `GET /ai-media/:id` 同时返回 `10029 数据不存在`。脚本遇到这一情况会按记录ID或任务ID回查任务列表并继续轮询；不得因此重新创建任务。
 

@@ -91,11 +91,14 @@ node bihuoai-video-cover/scripts/main.mjs assets
 模型不是长期私有资料，使用命令参数选择：
 
 ```bash
-# 只使用 Image 2
---model image-2
+# 只使用 Image 2.5 Sunburst
+--model gpt-image-2.5-sunburst
+
+# 只使用 Image 2.5 Flare
+--model gpt-image-2.5-flare
 
 # 只使用千问3.0 Pro；默认即为2K
 --model qwen-image-3.0-pro --image-size 2K
 ```
 
-不提供 `--model` 时，默认先用 Image 2；只有符合安全降级条件时才尝试一次千问3.0 Pro。
+不提供 `--model` 时，默认依次使用Image 2.5 Sunburst、Image 2.5 Flare、千问3.0 Pro；只有当前任务明确失败且符合安全降级条件时才创建下一个模型任务。

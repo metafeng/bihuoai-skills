@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | `bihuoai-link-extract` | 必火AI链接提取 | 提取视频口播文稿，并结合上下文校正 AI 术语 |
 | `bihuoai-material-upload` | 必火AI素材上传 | 上传本地图片、音频、视频或临时文件并返回素材 URL |
-| `bihuoai-video-cover` | 必火AI视频封面 | 使用必火AI图片模型制作中文大字短视频封面，支持指定Image 2或千问3.0 Pro（默认2K） |
+| `bihuoai-video-cover` | 必火AI视频封面 | 使用必火AI图片模型制作中文大字短视频封面，默认依次使用Image 2.5 Sunburst、Image 2.5 Flare和千问3.0 Pro（默认2K） |
 | `bihuoai-digital-human` | 必火AI数字人合成 | 规范中文 TTS 朗读文本，创建数字人视频并下载成片 |
 | `bihuoai-smart-clip` | 必火AI智能剪辑 | 查询模板，将数字人作品生成智能剪辑成片 |
 | `bihuoai-publish` | 必火AI视频发布 | 查询发布账号、保存草稿、正式或定时发布 |
@@ -190,16 +190,23 @@ node bihuoai-video-cover/scripts/main.mjs generate \
 
 如果底图没有配置到EXTEND.md，也可以使用 `--reference ./人物底图.jpg` 明确传入本地底图。Logo、产品截图和风格参考均为可选素材，不应为了凑素材而添加。
 
-默认优先使用 `image-2`。只有Image 2明确失败或成功却无图片URL，且不是余额、权限、审核或参数问题时，才自动创建一次 `qwen-image-3.0-pro` 备用任务。公共Skill不附带任何个人照片或默认人物素材。
+默认模型顺序为 `gpt-image-2.5-sunburst` → `gpt-image-2.5-flare` → `qwen-image-3.0-pro`。只有当前模型明确失败或成功却无图片URL，且不是余额、权限、审核或参数问题时，才创建下一个模型任务；轮询超时和未知状态不会自动切换。公共Skill不附带任何个人照片或默认人物素材。
 
 需要固定模型做效果对比时，可以显式指定。指定后只创建该模型的一次任务，不会先调用另一个模型：
 
 ```bash
-# 只使用 Image 2
+# 只使用 Image 2.5 Sunburst
 node bihuoai-video-cover/scripts/main.mjs generate \
   --prompt-file ./cover-prompt.txt \
   --asset default \
-  --model image-2 \
+  --model gpt-image-2.5-sunburst \
+  --dry-run
+
+# 只使用 Image 2.5 Flare
+node bihuoai-video-cover/scripts/main.mjs generate \
+  --prompt-file ./cover-prompt.txt \
+  --asset default \
+  --model gpt-image-2.5-flare \
   --dry-run
 
 # 只使用千问3.0 Pro，默认使用2K
@@ -211,7 +218,7 @@ node bihuoai-video-cover/scripts/main.mjs generate \
   --dry-run
 ```
 
-确认预演中的 `modelOrder`、`imageSize` 和费用后，把 `--dry-run` 换成 `--confirm-generate` 并增加 `--output`。省略 `--model` 时仍执行Image 2优先的默认策略。
+确认预演中的 `modelOrder`、`imageSize` 和费用后，把 `--dry-run` 换成 `--confirm-generate` 并增加 `--output`。省略 `--model` 时执行Sunburst → Flare → 千问3.0 Pro的默认策略。
 
 个人默认底图和可选历史案例可以写入私有 `~/.bihuoai-skills/bihuoai-digital-human/EXTEND.md` 的 `cover_` 字段，不提交到仓库。完整字段和更换方法见[私有扩展配置模板](./EXTEND.md)。运行 `node bihuoai-video-cover/scripts/main.mjs assets` 查看已配置素材。普通生成只使用 `--asset default` 或明确选择的底图；`--asset 历史封面1` 仅在用户主动要求参考该案例时使用。
 

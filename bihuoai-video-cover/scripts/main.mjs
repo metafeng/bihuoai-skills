@@ -26,8 +26,10 @@ import {
 
 loadEnvFiles();
 
-export const PRIMARY_MODEL = "image-2";
+export const PRIMARY_MODEL = "gpt-image-2.5-sunburst";
+export const SECONDARY_MODEL = "gpt-image-2.5-flare";
 export const FALLBACK_MODEL = "qwen-image-3.0-pro";
+export const DEFAULT_MODEL_ORDER = Object.freeze([PRIMARY_MODEL, SECONDARY_MODEL, FALLBACK_MODEL]);
 export const DEFAULT_RATIO = "9:16";
 export const DEFAULT_FALLBACK_SIZE = "2K";
 export const MAX_REFERENCE_IMAGES = 3;
@@ -158,7 +160,7 @@ export function splitReferences(values) {
   const uniqueLocal = [...new Set(localPaths)];
   const uniqueUrls = [...new Set(urls)];
   if (uniqueLocal.length + uniqueUrls.length > MAX_REFERENCE_IMAGES) {
-    throw new Error(`最多使用 ${MAX_REFERENCE_IMAGES} 张参考图，以确保 Image 2 失败时可切换到千问 3.0 Pro。`);
+    throw new Error(`最多使用 ${MAX_REFERENCE_IMAGES} 张参考图，以确保最终可切换到千问 3.0 Pro。`);
   }
   return { localPaths: uniqueLocal, urls: uniqueUrls };
 }
@@ -168,17 +170,17 @@ export function modelChain(modelOptions, requestedModel = null) {
   const enabled = new Map(images.filter((item) => item?.enabled !== false).map((item) => [item.model, item]));
   if (requestedModel) {
     const model = String(requestedModel).trim();
-    if (![PRIMARY_MODEL, FALLBACK_MODEL].includes(model)) {
-      throw new Error(`不支持指定模型 ${model}；可选：${PRIMARY_MODEL}、${FALLBACK_MODEL}`);
+    if (!DEFAULT_MODEL_ORDER.includes(model)) {
+      throw new Error(`不支持指定模型 ${model}；可选：${DEFAULT_MODEL_ORDER.join("、")}`);
     }
     if (!enabled.has(model)) {
       throw new Error(`当前账号没有开放指定模型 ${model}。`);
     }
     return [enabled.get(model)];
   }
-  const chain = [PRIMARY_MODEL, FALLBACK_MODEL].filter((model) => enabled.has(model));
+  const chain = DEFAULT_MODEL_ORDER.filter((model) => enabled.has(model));
   if (!chain.length) {
-    throw new Error("当前账号没有开放 Image 2 或千问 3.0 Pro，无法按本 Skill 的模型策略生成封面。");
+    throw new Error(`当前账号没有开放 ${DEFAULT_MODEL_ORDER.join("、")}，无法按本 Skill 的模型策略生成封面。`);
   }
   return chain.map((model) => enabled.get(model));
 }
@@ -217,6 +219,10 @@ export function shouldFallback(work) {
     return false;
   }
   return Number(work?.status) === FAILED || (Number(work?.status) === SUCCESS && !work?.url);
+}
+
+export function shouldTryNextModel(work, chain, index) {
+  return Boolean(chain?.[index + 1]) && shouldFallback(work);
 }
 
 async function modelOptions(args) {
@@ -374,7 +380,7 @@ async function dryRun(args, prompt, chain, references) {
     inspectedReferences: references.inspected.map((item) => item.file),
     modelOrder: chain.map((item) => item.model),
     estimates,
-    note: "amount 的计价单位由当前必火AI账号定义；只有首选模型失败且失败原因允许降级时才创建备用任务。",
+    note: "amount 的计价单位由当前必火AI账号定义；仅当前模型明确失败且失败原因允许降级时，才按顺序创建下一个模型任务。",
   };
 }
 
@@ -452,12 +458,12 @@ async function generate(args) {
       };
     }
 
-    const canTryFallback = option.model === PRIMARY_MODEL && chain[index + 1]?.model === FALLBACK_MODEL && shouldFallback(final);
+    const canTryFallback = shouldTryNextModel(final, chain, index);
     if (!canTryFallback) {
       throw new Error(`${option.name || option.model} 未生成可下载图片：${stringifyFailure(final.errorMessage) || `状态 ${final.status}`}。为避免重复计费，未继续创建其他任务。任务 ID：${final.id}`);
     }
   }
-  throw new Error("Image 2 和千问 3.0 Pro 均未返回可下载图片。");
+  throw new Error("Image 2.5 Sunburst、Image 2.5 Flare 和千问 3.0 Pro 均未返回可下载图片。");
 }
 
 export async function main(argv = process.argv.slice(2)) {
@@ -465,7 +471,7 @@ export async function main(argv = process.argv.slice(2)) {
   const action = args._[0] || "help";
   if (action === "help") return printJson({
     actions: ["assets", "models", "price", "list", "detail", "create", "generate", "wait", "download"],
-    defaultModelOrder: [PRIMARY_MODEL, FALLBACK_MODEL],
+    defaultModelOrder: DEFAULT_MODEL_ORDER,
     defaultRatio: DEFAULT_RATIO,
     maxReferenceImages: MAX_REFERENCE_IMAGES,
     example: "node scripts/main.mjs generate --prompt-file ./cover-prompt.txt --asset 杭州背景 --dry-run",
