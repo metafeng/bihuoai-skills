@@ -1,63 +1,69 @@
 ---
 name: bihuoai-video-pipeline
-description: 编排必火AI数字人合成、智能剪辑和视频发布三个 Skill，从口播文案生成数字人视频，可选剪辑、下载、保存断点并在明确确认后发布。用户要求一站式完成必火AI视频全流程、批量串联或从失败阶段恢复时使用。
+description: 通过必火全员IP营销平台 MCP 编排数字人合成、智能剪辑和视频发布，从口播文案生成视频，可选封面、剪辑、下载和发布，并保存任务状态支持断点恢复。用户要求一站式完成必火AI视频全流程或从失败阶段恢复时使用。
 ---
 
 # 必火AI视频全流程
 
-本 Skill 是编排层，依赖同级三个 Skill：`bihuoai-digital-human`、`bihuoai-smart-clip`、`bihuoai-publish`。共享客户端也存放在本 Skill 中，四个目录应作为一套安装。
-
-整条流程只读取 `BIHUOAI_OPEN_KEY`，以 `x-open-key` 透传到每个子 Skill；也支持一次性 `--open-key`。不支持其他认证变量，状态文件不得保存任何凭证。
-
-## 工作流
+本 Skill 是编排层，复用同系列数字人、素材上传、视频封面、智能剪辑和发布规则。所有平台动作通过 `agent-bihuoai` MCP 完成。
 
 ```text
-口播文案 → TTS 朗读版规范化 → 数字人合成 → 智能剪辑（可跳过） → 视频发布（可跳过）
+文案或分享链接 → 文稿校正 → TTS 朗读版 → 数字人合成 → 封面（可选） → 智能剪辑（可选） → 发布（可选）
 ```
 
-每个有副作用的阶段使用独立确认：
+## 连接规则
 
-- 数字人合成：`--confirm-create`
-- 智能剪辑：`--confirm-clip`
-- 正式发布：`--confirm-publish`
+- 使用客户端已完成 OAuth 授权的 `agent-bihuoai` MCP，不处理任何平台凭证。
+- MCP 不可用时按 `https://agent.bihuoai.com/oauth/mcp-install` 引导连接，不回退到直连接口。
+- 首次使用或工具字段不清楚时先调用 `get_usage_guide`。
+- 形象、声音、模型、模板和发布账号 ID 都从当前账号的实时列表取得，不猜、不跨账号复用。
 
-用户只同意生成视频，不代表同意发布。发布前仍需展示最终视频、封面、标题、目标账号和定时时间并单独确认。
+## 独立确认
 
-## 推荐执行方式
+以下阶段分别确认，前一步授权不自动覆盖后一步：
 
-先整体预演：
+1. 链接提取或其他标注会扣费的内容处理。
+2. 数字人合成。
+3. 封面生图。
+4. 智能剪辑。
+5. 正式或定时发布。
 
-```bash
-SKILL_DIR=/Users/metafeng/.agents/skills/bihuoai-video-pipeline
-node "$SKILL_DIR/scripts/main.mjs" run --text-file ./口播稿.txt --tts-output ./口播稿.朗读版.txt --title '视频标题' --dry-run --state-file ./必火视频任务.json
+批量任务可以一次说明总数量和费用影响后确认，但仍要逐个保存任务 ID。发布前必须再次展示最终视频、封面、标题、目标账号和定时时间。
+
+## 标准流程
+
+1. 创建本地状态文件，先记录输入来源、标题和各阶段为 `pending`。状态文件不得包含账号凭证或一次性上传信息。
+2. 输入是分享链接时按 `bihuoai-link-extract` 提取并保留原始文稿；输入是本地文件时按 `bihuoai-material-upload` 得到 URL。
+3. 按 `bihuoai-digital-human` 生成朗读版，实时选择形象和声音，确认后调用 `create_digital_human_video`。立即保存 `dhVideoId`。
+4. 用 `get_dh_video_status` 查询原任务；成功后保存 `videoUrl`。
+5. 用户需要封面时按 `bihuoai-video-cover` 独立预检、确认、创建和质检，保存生图任务 ID 与封面 URL。
+6. 用户需要剪辑时调用 `list_clip_templates` 选模板，确认后 `create_clip_task`，保存任务 ID，并用 `get_clip_task_status` 查询。编辑模式等待用户在平台页面确认。
+7. 用户需要发布时先调用 `create_pub_article` 保存稿件；展示最终预检并取得独立确认后，对每个账号分别调用 `submit_publication`。
+8. 每个异步任务至少间隔 15 秒查询。完成、失败、待人工确认或用户停止时更新状态文件。
+
+## 状态文件
+
+建议结构：
+
+```json
+{
+  "title": "视频标题",
+  "source": {},
+  "digitalHuman": {"status": "pending", "taskId": null, "videoUrl": null},
+  "cover": {"status": "skipped", "taskId": null, "imageUrl": null},
+  "clip": {"status": "skipped", "taskId": null, "videoUrl": null},
+  "publication": {"status": "skipped", "articleId": null, "submissions": []},
+  "updatedAt": null
+}
 ```
 
-确认后生成并剪辑：
+- 每次创建成功拿到任务 ID 后立刻原子更新状态文件，再开始等待。
+- 重启后先读状态文件，并查询已有任务；已存在任务 ID 时绝不重新创建。
+- 状态未知、客户端断线或轮询超时都不是重建依据。
+- 状态文件可能含私有媒体 URL，应保存在工作区私有位置，不提交公共仓库。
 
-```bash
-node "$SKILL_DIR/scripts/main.mjs" run \
-  --text-file ./口播稿.txt \
-  --tts-output ./口播稿.朗读版.txt \
-  --title '视频标题' \
-  --avatar-name '你的形象名称' \
-  --voice-name '你的声音名称' \
-  --template-name '你选择的模板名称' \
-  --confirm-create --confirm-clip \
-  --digital-human-output ./数字人原片.mp4 \
-  --clip-output ./最终成片.mp4 \
-  --state-file ./必火视频任务.json
-```
+## 完成判定
 
-确认发布后，在同一命令增加一个或多个 `--target '平台:uniqueId' --confirm-publish`。不需要剪辑时增加 `--skip-clip`。
-
-文本驱动模式默认继承数字人 Skill 的 TTS 规范化：能确定的年份、数量、日期等转换为中文朗读文本；无法判断的数字保留原样并继续，不询问用户。原始文案不覆盖，`--tts-output` 可保存朗读版；需要完全禁用时增加 `--no-tts-normalize`。
-
-## 断点与恢复
-
-- 始终建议提供 `--state-file`。脚本在每个成功阶段后保存任务 ID、结果和更新时间，权限设为当前用户可读写。
-- 再次运行同一命令时，会跳过状态文件里已有的阶段，避免重复生成。
-- 智能剪辑返回状态 `5` 时，流程写入 `needsReview` 并停止；人工确认后再继续。
-- 使用 `show-state --state-file 文件` 查看进度。
-- 状态文件不保存 Open Key，但可能含私有视频 URL，不要提交到公开仓库。
-
-详细接口和用户配置机制见 [references/api.md](references/api.md)。
+- 数字人、封面和剪辑分别以对应状态工具返回成功且存在结果 URL 为准。
+- 发布提交成功不等于外部平台发布成功；最终状态需要平台记录或桌面客户端回执。
+- 任一阶段失败时保留已有成果和任务 ID，从失败阶段继续，不回滚或重跑已完成阶段。

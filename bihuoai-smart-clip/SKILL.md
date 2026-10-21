@@ -1,44 +1,31 @@
 ---
 name: bihuoai-smart-clip
-description: 使用必火AI智能剪辑，把已有数字人作品按模板生成剪辑任务，查询进度、处理人工审核节点并下载成片。用户提到智能剪辑、数字人二剪、剪辑模板、剪辑任务或等待确认时使用。
+description: 通过必火全员IP营销平台 MCP 查询剪辑模板，把已有主视频或数字人成片生成智能剪辑任务，并查询进度、处理编辑确认和交付成片。用户提到智能剪辑、数字人二剪、剪辑模板或剪辑任务时使用。
 ---
 
 # 必火AI智能剪辑
 
-本 Skill 接收数字人作品 ID，生成智能剪辑成片。不要在这里重新创建数字人。
+本 Skill 接收已有视频，不在这里重新创建数字人。
 
-认证只读取 `BIHUOAI_OPEN_KEY` 并发送 `x-open-key`，也可临时传 `--open-key`。不支持其他认证变量；不要记录或提交任何凭证。
+## 连接规则
+
+- 使用客户端已完成 OAuth 授权的 `agent-bihuoai` MCP，不处理任何平台凭证。
+- MCP 不可用时按 `https://agent.bihuoai.com/oauth/mcp-install` 引导连接。
+- 工具参数变化时先调用 `get_usage_guide`。
 
 ## 标准流程
 
-1. 先确认数字人任务已成功，并取得 `dhVideoId`。
-2. 先实时查询当前账号可用模板。用户没有选择模板时停止，不使用其他账号的模板名称或编码。
-3. 先用 `--dry-run` 核对模板、作品 ID、标题和封面模式。
-4. 只有用户明确同意可能产生的算力消耗后，才增加 `--confirm-clip`。
-5. 轮询在完成、失败或等待人工确认时停止。状态 `5` 必须交给用户检查，不得默认确认。
-6. 只有得到明确确认后，才运行 `confirm-review --confirm-review`。
+1. 确认已有可用的 `mainVideoUrl`，或数字人任务已成功并取得视频 URL。本地视频先用 `bihuoai-material-upload`。
+2. 调用 `list_clip_templates`，展示名称和 `templateCode`。用户未选择时停止，不使用其他账号或历史任务的模板编码。
+3. 根据模板要求准备 `script`、`voiceId`、`trainingId`、`avatarUrl`、`materialUrls` 或 `mainVideoUrl`；只传当前模板实际需要的字段。
+4. 展示预检：模板、主视频、标题、模式和补充素材。工具说明标注会扣费时，取得明确确认后调用 `create_clip_task`。
+5. 默认 `mode=auto`。需要人工调整时用编辑模式；任务进入待确认后调用 `open_web_page` 打开平台剪辑页，由用户检查和确认。
+6. 保存任务 ID，用 `get_clip_task_status` 查询，未完成时间隔不少于 15 秒。
+7. 成功后返回成片 URL；失败时保留任务 ID和平台错误。超时或未知状态不重新创建。
 
-## 命令
+## 边界
 
-```bash
-SKILL_DIR=/Users/metafeng/.agents/skills/bihuoai-smart-clip
-node "$SKILL_DIR/scripts/main.mjs" list-templates
-node "$SKILL_DIR/scripts/main.mjs" list
-node "$SKILL_DIR/scripts/main.mjs" create --dh-video-id 作品ID --template-name '你选择的模板名称' --dry-run
-node "$SKILL_DIR/scripts/main.mjs" create --dh-video-id 作品ID --template-name '你选择的模板名称' --confirm-clip --wait --download ./剪辑成片.mp4
-node "$SKILL_DIR/scripts/main.mjs" wait --id 剪辑任务ID
-node "$SKILL_DIR/scripts/main.mjs" confirm-review --id 剪辑任务ID --config ./审核配置.json --confirm-review
-```
-
-复杂剪辑参数可使用 `--config ./任务配置.json` 直接提供完整请求体。
-
-## 状态
-
-- `-2` 预处理
-- `-1` 就绪
-- `4` 处理中
-- `1` 完成
-- `2` 失败
-- `5` 等待人工确认
-
-接口摘要见 [接口契约](../bihuoai-video-pipeline/references/api.md)。
+- 不把数字人作品 ID 当作成片 URL；按当前工具字段传入正确来源。
+- 编辑模式的人工确认不能由 Skill 擅自代替。
+- 只读模板和状态查询不得触发创建。
+- 剪辑完成后不自动发布。

@@ -2,3 +2,10 @@ interface:
   display_name: "必火AI链接提取"
   short_description: "提取视频口播文稿，并结合上下文校正 AI 术语"
   default_prompt: "Use $bihuoai-link-extract to 从视频分享链接提取口播文稿，保留原始转写，并交付上下文校正版。"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "agent-bihuoai"
+      description: "必火全员IP营销平台 MCP"
+      transport: "streamable_http"
+      url: "https://agent.bihuoai.com/v1/mcp"

@@ -1,3 +1,6 @@
+import * as fs from "node:fs";
+import { pathToFileURL } from "node:url";
+
 const DIGITS = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
 const SMALL_UNITS = ["", "十", "百", "千"];
 const BIG_UNITS = ["", "万", "亿", "兆"];
@@ -149,3 +152,26 @@ export function normalizeTtsText(input) {
 
   return { originalText, ttsText: text, changed: text !== originalText, changes };
 }
+
+function cliValue(args, name) {
+  const index = args.indexOf(name);
+  return index >= 0 ? args[index + 1] : undefined;
+}
+
+function runCli() {
+  const args = process.argv.slice(2);
+  const textFile = cliValue(args, "--text-file");
+  const inlineText = cliValue(args, "--text");
+  const output = cliValue(args, "--output");
+  if ((!textFile && inlineText === undefined) || (textFile && inlineText !== undefined)) {
+    process.stderr.write("用法：node tts-normalize.mjs (--text 文案 | --text-file 文件) [--output 文件]\n");
+    process.exitCode = 1;
+    return;
+  }
+  const source = textFile ? fs.readFileSync(textFile, "utf8") : inlineText;
+  const result = normalizeTtsText(source);
+  if (output) fs.writeFileSync(output, result.ttsText, "utf8");
+  process.stdout.write(`${JSON.stringify({ ...result, output: output || null }, null, 2)}\n`);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) runCli();

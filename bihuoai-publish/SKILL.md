@@ -1,34 +1,36 @@
 ---
 name: bihuoai-publish
-description: 使用必火AI发布中心查询已绑定账号和平台、保存视频草稿、正式发布或定时发布并查询发布记录。用户提到必火AI发布、视频分发、绑定账号、定时发布、重试发布或发布记录时使用。
+description: 通过必火全员IP营销平台 MCP 核对已绑定账号和平台，保存视频稿件，并在用户明确确认后正式或定时提交发布。用户提到必火AI发布、视频分发、绑定账号、定时发布或发布记录时使用。
 ---
 
 # 必火AI视频发布
 
-发布属于对外操作。默认只查询账号和平台，不默认创建草稿，更不默认提交发布。
+发布是对外操作。默认只做预检，不默认保存稿件，更不默认提交发布。
 
-认证只读取 `BIHUOAI_OPEN_KEY` 并发送 `x-open-key`，也可临时传 `--open-key`。不支持其他认证变量；不要记录或提交任何凭证。
+## 连接规则
+
+- 使用客户端已完成 OAuth 授权的 `agent-bihuoai` MCP，不处理任何平台凭证。
+- 工具或字段不清楚时先调用 `get_usage_guide`，以当前 MCP 工具说明为准。
+- MCP 不可用时按 `https://agent.bihuoai.com/oauth/mcp-install` 引导连接，不回退到直连接口。
 
 ## 标准流程
 
-1. 运行 `list-accounts` 和 `list-platforms`，把账号名称、平台和 `uniqueId` 展示给用户选择。
-2. 发布前核对标题、视频 URL、封面、摘要、目标账号和定时时间。
-3. 只保存平台内草稿时，要求用户明确同意并增加 `--confirm-save`。
-4. 正式发布或定时发布时，必须再次取得明确确认，并增加 `--confirm-publish`。
-5. 一个 `--target` 对应一个账号；多个目标逐个提交并分别返回结果。
+1. 使用当前可用的账号和平台查询工具读取绑定账号。展示账号名称、平台和 `uniqueId`，让用户确认目标；没有列表工具时按 `get_usage_guide` 指引处理，绝不猜 ID。
+2. 核对标题、视频 URL、封面 URL、摘要、目标账号和定时时间。本地文件先用 `bihuoai-material-upload`。
+3. 若只需保存平台稿件，说明将创建稿件并取得确认，然后调用 `create_pub_article`。
+4. 正式或定时发布前，再次展示最终稿件、目标平台、账号和时间，取得独立明确确认。
+5. 调用 `submit_publication` 时一次只提交一个平台账号。多个账号逐个调用、逐个记录结果。
+6. 保存稿件 ID、每个提交记录和平台返回信息，便于恢复和排查。
 
-## 命令
+## 成功判定
 
-```bash
-SKILL_DIR=/Users/metafeng/.agents/skills/bihuoai-publish
-node "$SKILL_DIR/scripts/main.mjs" list-accounts
-node "$SKILL_DIR/scripts/main.mjs" list-platforms
-node "$SKILL_DIR/scripts/main.mjs" list-publications
-node "$SKILL_DIR/scripts/main.mjs" create-draft --title '标题' --video-url 'https://...' --cover-url 'https://...' --summary '摘要' --confirm-save
-node "$SKILL_DIR/scripts/main.mjs" publish --title '标题' --video-url 'https://...' --cover-url 'https://...' --target '平台编码:账号uniqueId' --confirm-publish
-node "$SKILL_DIR/scripts/main.mjs" publish --article-id 稿件ID --target '平台编码:账号uniqueId' --scheduled-at '2026-08-26T10:00:00+08:00' --confirm-publish
-```
+- `create_pub_article` 成功只代表平台稿件已保存。
+- `submit_publication` 成功只代表发布请求已交给用户电脑上的必火AI桌面客户端，不等于外部平台已经发布成功。
+- 最终成功需要读取平台发布记录或桌面客户端回执；拿不到最终回执时明确写“已提交，最终状态待确认”。
 
-重试和删除记录也分别需要 `--confirm-retry`、`--confirm-delete`。不要猜平台编码或账号 ID，必须来自当前账号的实时列表。
+## 边界
 
-接口摘要见 [接口契约](../bihuoai-video-pipeline/references/api.md)。
+- 生成视频、生成封面和智能剪辑的确认都不等于发布确认。
+- 未经确认不提交发布，不自动改成定时发布，不自动扩大到其他账号。
+- 不猜平台编码、账号 ID 或定时时区。
+- 失败重试、删除记录或更换目标账号都属于新的外部动作，需要重新确认。

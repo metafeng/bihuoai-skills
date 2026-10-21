@@ -5,5 +5,12 @@ interface:
   icon_large: "./assets/icon.svg"
   brand_color: "#E53935"
   default_prompt: "用 $bihuoai-video-cover，把我上传的人物或视频底图、标题和补充素材制作成一张9:16短视频封面。"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "agent-bihuoai"
+      description: "必火全员IP营销平台 MCP"
+      transport: "streamable_http"
+      url: "https://agent.bihuoai.com/v1/mcp"
 policy:
   allow_implicit_invocation: true

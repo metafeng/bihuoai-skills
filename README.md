@@ -1,59 +1,84 @@
 # 必火AI Skills
 
-面向必火AI的一套视频生产 Skills，将链接提取、素材上传、视频封面、数字人合成、智能剪辑和视频发布拆分为独立能力，并提供可恢复的一站式编排流程。
+面向[必火全员IP营销平台](https://agent.bihuoai.com)的一组专业工作流 Skills。平台 MCP 负责账号授权、能力调用、数据访问与计费；本仓库负责数字人、封面、剪辑、发布等任务的业务流程、质量规则、默认配置和断点恢复。
 
-> 本仓库不包含 Open Key、Cookie、生成视频或发布凭证。使用前需要配置自己的必火AI Open Key。
+## MCP 与 Skills 的关系
+
+- `agent-bihuoai` MCP 是能力层：以当前登录账号调用平台工具，形象、声音、模型、模板、素材和发布账号都来自该账号。
+- `$ai-studio` 是平台通用使用说明：覆盖 MCP 提供的大多数工具和通用上传方法，适合临时、非固定流程的任务。
+- 本仓库的 Skills 是工作流层：决定先查什么、如何选资源、何时确认费用、如何轮询、怎样质检和怎样避免重复创建。
+- 只安装 MCP，或 MCP 加 `$ai-studio`，已经能完成通用操作；需要稳定复用数字语境转换、术语校正、封面设计规范、模型降级或全流程恢复时，仍建议安装本仓库。
+- OAuth 登录凭证由客户端和操作系统安全存储。Skill 不读取、不保存，也不要求用户手工填写平台密钥。
 
 ## Skill 组成
 
 | Skill | 中文显示名称 | 作用 |
 | --- | --- | --- |
 | `bihuoai-link-extract` | 必火AI链接提取 | 提取视频口播文稿，并结合上下文校正 AI 术语 |
-| `bihuoai-material-upload` | 必火AI素材上传 | 上传本地图片、音频、视频或临时文件并返回素材 URL |
-| `bihuoai-video-cover` | 必火AI视频封面 | 使用必火AI图片模型制作中文大字短视频封面，默认依次使用Image 2.5 Sunburst、Image 2.5 Flare和千问3.0 Pro（默认2K） |
-| `bihuoai-digital-human` | 必火AI数字人合成 | 规范中文 TTS 朗读文本，创建数字人视频并下载成片 |
-| `bihuoai-smart-clip` | 必火AI智能剪辑 | 查询模板，将数字人作品生成智能剪辑成片 |
-| `bihuoai-publish` | 必火AI视频发布 | 查询发布账号、保存草稿、正式或定时发布 |
+| `bihuoai-material-upload` | 必火AI素材上传 | 上传本地图片、音频、视频或文档并返回素材 URL |
+| `bihuoai-video-cover` | 必火AI视频封面 | 用必火AI生图模型制作中文大字短视频封面 |
+| `bihuoai-digital-human` | 必火AI数字人合成 | 规范中文 TTS 朗读文本并创建数字人口播视频 |
+| `bihuoai-smart-clip` | 必火AI智能剪辑 | 查询模板并把已有视频制作成智能剪辑成片 |
+| `bihuoai-publish` | 必火AI视频发布 | 保存平台稿件，并在确认后提交到指定账号 |
 | `bihuoai-video-pipeline` | 必火AI视频全流程 | 串联合成、剪辑和发布，支持断点恢复 |
-
-工作流：
 
 ```text
 视频分享链接 → 链接提取（可选） → 数字人合成 → 智能剪辑（可选） → 视频发布（可选）
-本地素材文件 → 素材上传 → 素材 URL → 数字人 / 智能剪辑 / 视频发布
-人物/底图 + 标题 → 视频封面 → 封面文件 / 封面 URL → 视频发布（可选）
+本地素材 → 素材上传 → 公网 URL → 数字人 / 生图 / 剪辑 / 发布
+人物或视频底图 + 标题 → 视频封面 → 封面 URL → 视频发布（可选）
 ```
 
-## 服务地址
+## 安装平台 MCP 并授权
 
-- 必火全员IP营销平台：[https://agent.bihuoai.com](https://agent.bihuoai.com)
-- 主接口：`https://ai-api.aigcoem.com/v1`
-- 智能剪辑：`https://ai-api.aigcoem.com/v1/ai-cut`
-
-必火AI Open Key（API Key）需要登录[必火全员IP营销平台](https://agent.bihuoai.com)获取。本仓库不提供公共Key，也不要使用其他人的Key。
-
-接口仍可能随平台升级而变化。出现登录正常但 API 返回异常时，应重新核对浏览器网络请求和当前前端资源。
-
-## 环境要求
-
-- Node.js 18 或更高版本
-- 可访问必火AI工作台
-- 当前账号有效的 Open Key
-- Codex、Claude Code 或 WorkBuddy 等支持本地 Skills 的客户端
-
-## 安装
-
-克隆仓库：
+安装说明以平台当前页面为准：
 
 ```bash
-git clone git@github.com:metafeng/bihuoai-skills.git
+curl -fsSL https://agent.bihuoai.com/oauth/mcp-install
+```
+
+Codex 可使用：
+
+```bash
+codex mcp add agent-bihuoai --url https://agent.bihuoai.com/v1/mcp
+```
+
+随后在客户端发起连接，浏览器会打开必火AI授权页。登录自己的平台账号并同意授权即可。macOS 通常把凭证放在系统钥匙串，Windows 通常放在 Windows 凭据管理器；配置文件只保存 MCP 地址，不保存可直接使用的登录凭证。
+
+若连接提示“该接口未对开放接入密钥开放”，说明平台尚未向 OAuth 接入凭证开放该能力，重复登录不会解决，需要联系平台开通。
+
+## 推荐安装方式：直接告诉 Codex
+
+在 Codex 中新建对话，复制下面整段指令：
+
+```text
+请使用 $skill-installer，从 GitHub 公共仓库 metafeng/bihuoai-skills 的 main 分支安装以下 7 个 Skill 到 Codex：
+
+- bihuoai-link-extract
+- bihuoai-material-upload
+- bihuoai-video-cover
+- bihuoai-digital-human
+- bihuoai-smart-clip
+- bihuoai-publish
+- bihuoai-video-pipeline
+
+安装后逐个验证 Skill，并告诉我实际安装位置。不要在 Skill 中写入账号凭证。
+
+然后先用 curl 读取 https://agent.bihuoai.com/oauth/mcp-install 的最新安装说明，再按说明接入名为 agent-bihuoai 的 MCP 服务，并引导我在浏览器完成 OAuth 账号授权。不要改用其他认证方式。
+```
+
+Codex 的内置安装器会把这些目录安装到 `$CODEX_HOME/skills`；未设置 `CODEX_HOME` 时默认是 `~/.codex/skills`。安装完成后，从下一轮对话开始使用新 Skill。
+
+如果 Skill 已经存在，不要直接覆盖。先确认它来自哪个仓库，再决定更新还是保留本地改动。
+
+## 手动安装
+
+需要自己维护 Git 仓库时，可以克隆后链接到 Codex：
+
+```bash
+git clone https://github.com/metafeng/bihuoai-skills.git
 cd bihuoai-skills
-```
-
-建议保留本仓库作为唯一维护源，再把七个 Skill 软链接到客户端目录。以 Codex 为例：
-
-```bash
 mkdir -p ~/.codex/skills
+
 for skill in \
   bihuoai-link-extract \
   bihuoai-material-upload \
@@ -67,294 +92,136 @@ do
 done
 ```
 
-Claude Code 和 WorkBuddy 可分别链接到 `~/.claude/skills`、`~/.workbuddy/skills`。如果目标位置已存在同名目录，请先检查，不要直接覆盖。
+Claude Code 和 WorkBuddy 可分别链接到它们自己的 Skills 目录。若目标位置已有同名目录，先核对来源，不要直接覆盖。
 
-## 配置 Open Key
+## 初始化用户默认配置
 
-先登录[必火全员IP营销平台](https://agent.bihuoai.com)获取自己账号的 Open Key（API Key），再保存到本机私有配置。
-
-Open Key 只保存在用户私有目录，不要写入仓库：
-
-```bash
-mkdir -p ~/.bihuoai-skills
-chmod 700 ~/.bihuoai-skills
-touch ~/.bihuoai-skills/.env
-chmod 600 ~/.bihuoai-skills/.env
-```
-
-在 `~/.bihuoai-skills/.env` 中添加：
+安装和授权完成后，在新的 Codex 对话中复制下面的指令：
 
 ```text
-BIHUOAI_OPEN_KEY=你的OpenKey
+请帮我初始化必火AI用户配置：
+
+1. 从 https://raw.githubusercontent.com/metafeng/bihuoai-skills/main/BIHUOAI_USER_CONFIG.example.md 读取公开模板。
+2. 将模板保存为我本机的私有配置：
+   - macOS / Linux：~/.bihuoai-skills/bihuoai-digital-human/BIHUOAI_USER_CONFIG.md
+   - Windows：%USERPROFILE%\.bihuoai-skills\bihuoai-digital-human\BIHUOAI_USER_CONFIG.md
+3. 使用 $bihuoai-digital-human，通过已授权的 agent-bihuoai MCP，只读查询当前账号“我的形象”和声音，列出名称与 ID，不创建视频、不产生生成费用。
+4. 让我选择默认形象和默认声音；得到我的选择后，再把对应的 trainingId、voiceId、名称写入 BIHUOAI_USER_CONFIG.md。
+5. 不要把 OAuth 凭证、Cookie、临时上传信息或其他账号的资源写入配置文件。
+6. 写入后重新读取配置，只显示字段名称和所选资源名称，不输出任何登录凭证。
 ```
 
-七个 Skill 只读取 `BIHUOAI_OPEN_KEY`，并发送请求头 `x-open-key`。也可以在单次命令使用 `--open-key`，但应避免让凭证进入终端历史。不支持其他认证变量或请求头。
+如果只想先创建空白配置，也可以手动执行。
 
-也可以按需覆盖接口：
-
-```text
-BIHUOAI_API_BASE=https://ai-api.aigcoem.com/v1
-BIHUOAI_CLIP_API_BASE=https://ai-api.aigcoem.com/v1/ai-cut
-BIHUOAI_WEB_ORIGIN=https://agent.bihuoai.com
-```
-
-## 配置数字人默认资源
-
-默认形象、声音、语速和情绪保存在用户私有配置中，不提交到仓库：
-
-```text
-~/.bihuoai-skills/bihuoai-digital-human/EXTEND.md
-```
-
-配置示例：
-
-```yaml
----
-default_avatar_id: 12345
-default_avatar_name: 你的形象名称
-default_voice_id: voice_请替换为你的声音ID
-default_voice_name: 你的声音名称
-default_speed: 1.0
-default_emotion: calm
-tts_normalize: true
-avatar_voice_12345: voice_该形象专用的声音ID
----
-```
-
-仓库提供了不含个人数据的完整模板：[EXTEND.md](./EXTEND.md)。可以复制到上述私有路径，再填写自己的形象、声音、封面底图和历史封面URL。私有文件建议设置为 `chmod 600`，不要提交回仓库。
-
-示例中的 ID 和名称必须替换为 `list-avatars`、`list-voices` 返回的当前账号资源。`avatar_voice_<形象ID>` 可以让指定形象自动使用专用声音；没有映射时使用全局默认声音。优先级为：命令参数 > 形象专用声音映射 > EXTEND.md 全局默认 > 环境变量。公共 Skill 不内置任何用户的形象或声音，迁移账号或平台升级后应重新核验。
-
-## 快速使用
-
-### 1. 链接提取
-
-先预演，再在确认可能产生计费后创建任务：
+macOS / Linux：
 
 ```bash
-node bihuoai-link-extract/scripts/main.mjs extract \
-  --url '视频分享链接' \
-  --dry-run
-
-node bihuoai-link-extract/scripts/main.mjs extract \
-  --url '视频分享链接' \
-  --confirm-extract --wait \
-  --output ./提取文稿.raw.txt
+config_dir="$HOME/.bihuoai-skills/bihuoai-digital-human"
+mkdir -p "$config_dir"
+curl -fsSL \
+  https://raw.githubusercontent.com/metafeng/bihuoai-skills/main/BIHUOAI_USER_CONFIG.example.md \
+  -o "$config_dir/BIHUOAI_USER_CONFIG.md"
+chmod 600 "$config_dir/BIHUOAI_USER_CONFIG.md"
 ```
 
-接口原文应保存为 `提取文稿.raw.txt`。Skill 会结合标题、全文上下文和内置 AI 术语表生成 `提取文稿.txt` 校正版，并保留原始文件供追溯；存在歧义的专有名词不会被静默猜测。校正版可以作为数字人合成的 `--text-file` 输入。排队或处理超时不会自动重复创建任务。
+Windows PowerShell：
 
-通用术语表位于 `bihuoai-link-extract/references/ai-terminology.md`。用户自己的公司名、产品名或人名不要写入公共仓库，可在 `~/.bihuoai-skills/bihuoai-link-extract/EXTEND.md` 中通过 `terminology_file` 指向私有术语表。
-
-### 2. 素材上传
-
-上传需要本地文件路径。先检查并预演；真实上传必须显式确认：
-
-```bash
-node bihuoai-material-upload/scripts/main.mjs inspect \
-  --file ./素材.mp4
-
-node bihuoai-material-upload/scripts/main.mjs preflight \
-  --file ./素材.mp4
-
-node bihuoai-material-upload/scripts/main.mjs upload \
-  --file ./素材.mp4 \
-  --confirm-upload
+```powershell
+$configDir = Join-Path $env:USERPROFILE ".bihuoai-skills\bihuoai-digital-human"
+New-Item -ItemType Directory -Force -Path $configDir | Out-Null
+Invoke-WebRequest `
+  -Uri "https://raw.githubusercontent.com/metafeng/bihuoai-skills/main/BIHUOAI_USER_CONFIG.example.md" `
+  -OutFile (Join-Path $configDir "BIHUOAI_USER_CONFIG.md")
 ```
 
-脚本会自动判断图片、音频、视频或临时文件，计算 MD5，优先使用秒传；未命中时再流式上传到 OSS。成功输出的 `url` 可以直接交给数字人、剪辑或发布 Skill。临时签名字段不会写入命令输出。
+配置文件可以保存以下用户默认值：
 
-### 3. 视频封面
+- 默认数字人形象和声音。
+- 某个形象专用的声音搭配。
+- 默认语速、情绪和 TTS 数字规范化开关。
+- 视频封面默认底图与用户主动选择时才使用的历史封面。
+- 链接提取使用的私有术语表路径。
 
-默认使用“人物/视频底图 + 标题提示词”自主设计封面，不需要成品封面参考，也不会因为私有配置里存在历史案例就自动加入。历史封面只在用户明确要求参考、复刻、沿用或模仿某一张时使用。
+账号切换后应重新查询形象和声音，不要继续沿用旧账号的资源 ID。
 
-先预演模型、参数和费用；预演不会上传图片或创建任务：
+## Codex 中的中文显示名称
 
-```bash
-node bihuoai-video-cover/scripts/main.mjs generate \
-  --prompt-file ./cover-prompt.txt \
-  --asset default \
-  --ratio 9:16 \
-  --dry-run
-```
+7 个 Skill 的 `agents/openai.yaml` 都已经配置中文 `display_name`。在支持该元数据的 Codex 界面中，Skill 列表和选择入口会显示中文名称：
 
-确认后上传明确列出的参考图、生成并下载封面：
+| 中文显示名称 | 提示词中的调用标识 |
+| --- | --- |
+| 必火AI链接提取 | `$bihuoai-link-extract` |
+| 必火AI素材上传 | `$bihuoai-material-upload` |
+| 必火AI视频封面 | `$bihuoai-video-cover` |
+| 必火AI数字人合成 | `$bihuoai-digital-human` |
+| 必火AI智能剪辑 | `$bihuoai-smart-clip` |
+| 必火AI视频发布 | `$bihuoai-publish` |
+| 必火AI视频全流程 | `$bihuoai-video-pipeline` |
 
-```bash
-node bihuoai-video-cover/scripts/main.mjs generate \
-  --prompt-file ./cover-prompt.txt \
-  --asset default \
-  --confirm-generate \
-  --output ./视频封面.png
-```
+中文名称用于界面展示；文件夹名、Skill 技术标识和提示词中的 `$skill-name` 仍使用英文小写名称。这能保证 Codex、终端和其他客户端跨平台兼容。部分只显示技术标识的客户端可能仍会看到英文名称，但不会影响使用。
 
-如果底图没有配置到EXTEND.md，也可以使用 `--reference ./人物底图.jpg` 明确传入本地底图。Logo、产品截图和风格参考均为可选素材，不应为了凑素材而添加。
+## 使用原则
 
-默认模型顺序为 `gpt-image-2.5-sunburst` → `gpt-image-2.5-flare` → `qwen-image-3.0-pro`。只有当前模型明确失败或成功却无图片URL，且不是余额、权限、审核或参数问题时，才创建下一个模型任务；轮询超时和未知状态不会自动切换。公共Skill不附带任何个人照片或默认人物素材。
+1. 先确认 `agent-bihuoai` MCP 已连接并完成浏览器授权。
+2. 资源 ID 一律通过平台实时列表取得，不复制其他账号的形象、声音、模板或发布账号 ID。
+3. 本地文件先使用 `bihuoai-material-upload` 转成公网 URL。
+4. 工具说明标注会扣费的操作，调用前必须向用户说明并取得明确确认。
+5. 创建类工具返回任务 ID 只代表已提交；使用对应状态工具查询，间隔不少于 15 秒。
+6. 超时或状态不明时继续查询原任务，不重新创建，避免重复扣费。
+7. 发布是独立的对外操作，数字人或剪辑生成的确认不等于发布确认。
 
-需要固定模型做效果对比时，可以显式指定。指定后只创建该模型的一次任务，不会先调用另一个模型：
+## 私有默认配置
 
-```bash
-# 只使用 Image 2.5 Sunburst
-node bihuoai-video-cover/scripts/main.mjs generate \
-  --prompt-file ./cover-prompt.txt \
-  --asset default \
-  --model gpt-image-2.5-sunburst \
-  --dry-run
+形象、声音、封面底图和个人术语可以保存在本机私有配置中，不提交到仓库：
 
-# 只使用 Image 2.5 Flare
-node bihuoai-video-cover/scripts/main.mjs generate \
-  --prompt-file ./cover-prompt.txt \
-  --asset default \
-  --model gpt-image-2.5-flare \
-  --dry-run
+- macOS / Linux：`~/.bihuoai-skills/bihuoai-digital-human/BIHUOAI_USER_CONFIG.md`
+- Windows：`%USERPROFILE%\.bihuoai-skills\bihuoai-digital-human\BIHUOAI_USER_CONFIG.md`
 
-# 只使用千问3.0 Pro，默认使用2K
-node bihuoai-video-cover/scripts/main.mjs generate \
-  --prompt-file ./cover-prompt.txt \
-  --asset default \
-  --model qwen-image-3.0-pro \
-  --image-size 2K \
-  --dry-run
-```
+公开模板见 [BIHUOAI_USER_CONFIG.example.md](./BIHUOAI_USER_CONFIG.example.md)。复制后去掉 `.example`，作为用户自己的 `BIHUOAI_USER_CONFIG.md`。Skill 会优先采用用户在本次任务中明确指定的资源，其次读取私有默认；最终仍要通过 MCP 的实时列表核验资源属于当前授权账号。
 
-确认预演中的 `modelOrder`、`imageSize` 和费用后，把 `--dry-run` 换成 `--confirm-generate` 并增加 `--output`。省略 `--model` 时执行Sunburst → Flare → 千问3.0 Pro的默认策略。
+## 各 Skill 的核心行为
 
-个人默认底图和可选历史案例可以写入私有 `~/.bihuoai-skills/bihuoai-digital-human/EXTEND.md` 的 `cover_` 字段，不提交到仓库。完整字段和更换方法见[私有扩展配置模板](./EXTEND.md)。运行 `node bihuoai-video-cover/scripts/main.mjs assets` 查看已配置素材。普通生成只使用 `--asset default` 或明确选择的底图；`--asset 历史封面1` 仅在用户主动要求参考该案例时使用。
+### 链接提取
 
-### 4. 数字人合成
+调用 `extract_content` 获得平台原始转写，原文单独保存；随后依据 [AI 术语表](./bihuoai-link-extract/references/ai-terminology.md) 生成上下文校正版。校正不是润色，无法确认的专有词保留原文并标注疑点。
 
-先查询当前账号资源：
+### 素材上传
 
-```bash
-node bihuoai-digital-human/scripts/main.mjs list-avatars
-node bihuoai-digital-human/scripts/main.mjs list-voices
-node bihuoai-digital-human/scripts/main.mjs show-defaults --verify
-node bihuoai-digital-human/scripts/main.mjs normalize-text \
-  --text '2020年有2个方案，第2个优先。' \
-  --tts-output ./口播稿.朗读版.txt
-```
+本地文件先由 `scripts/upload.mjs stat` 计算文件名、大小和 MD5，再调用 MCP 的 `prepare_file_upload`。未命中秒传时，用返回的一次性上传信息执行 `scripts/upload.mjs put`。最终 URL 可交给其他平台工具。
 
-文本驱动模式默认在合成前生成 TTS 朗读版：年份 `2020年` 转为“二零二零年”，数量 `2个` 转为“两个”，序数 `第2个` 转为“第二个”。无法判断用途的孤立数字保持原样，并继续生成，不会询问或阻塞。原始文案不会被覆盖；可用 `--no-tts-normalize` 关闭此功能。
+### 数字人合成
 
-先预演参数：
+使用 `list_avatars` 和 `list_voices` 核验形象及声音，然后调用 `create_digital_human_video`。文本驱动模式会先生成 TTS 朗读版，例如把年份 `2020年` 转成“二零二零年”、数量 `2个` 转成“两个”；用途不明确的数字保留原样并继续，不询问、不阻塞。
 
-```bash
-node bihuoai-digital-human/scripts/main.mjs create \
-  --text '这是一条测试文案。' \
-  --avatar-name '你的形象名称' \
-  --voice-name '你的声音名称' \
-  --dry-run
-```
+### 视频封面
 
-确认后创建并等待成片：
+默认使用“人物或视频底图 + 提示词”，不强制提供历史封面。模型顺序为：
 
-```bash
-node bihuoai-digital-human/scripts/main.mjs create \
-  --title '视频标题' \
-  --text-file ./口播稿.txt \
-  --tts-output ./口播稿.朗读版.txt \
-  --avatar-name '你的形象名称' \
-  --voice-name '你的声音名称' \
-  --confirm-create --wait \
-  --download ./数字人成片.mp4
-```
+1. `gpt-image-2.5-sunburst`
+2. `gpt-image-2.5-flare`
+3. `qwen-image-3.0-pro`，默认 2K
 
-### 5. 智能剪辑
+只有当前模型明确失败、没有产生图片，且原因不是余额、权限、审核或参数错误时才尝试下一模型。轮询超时和状态未知不自动降级。历史封面只在用户明确要求参考或复刻时加入。
 
-```bash
-node bihuoai-smart-clip/scripts/main.mjs list-templates
+### 智能剪辑与发布
 
-node bihuoai-smart-clip/scripts/main.mjs create \
-  --dh-video-id 数字人作品ID \
-  --template-name '你选择的模板名称' \
-  --confirm-clip --wait \
-  --download ./智能剪辑成片.mp4
-```
+智能剪辑使用实时模板列表、创建任务并查询状态；编辑模式需要在平台页面人工确认。发布先保存平台稿件，再针对一个账号提交一次。最终发布由用户电脑上的必火AI桌面客户端执行，因此 MCP 提交成功不能替代平台最终送达回执。
 
-如果任务返回状态 `5`，表示等待人工确认。不得默认确认，应先检查后再使用 `confirm-review --confirm-review`。
+## 故障排查
 
-### 6. 视频发布
+- MCP 未连接或授权失效：重新连接 `agent-bihuoai` 并完成浏览器授权。
+- 资源找不到：重新调用相应的 `list_*` 工具，确认资源属于当前账号。
+- 余额、套餐或额度不足：到[必火全员IP营销平台](https://agent.bihuoai.com)处理后再继续。
+- 请求频繁：降低并发并稍后重试。
+- 异步任务超时：记录任务 ID，继续查询原任务，不重复创建。
 
-先查询平台和已绑定账号：
+## 安全
 
-```bash
-node bihuoai-publish/scripts/main.mjs list-platforms
-node bihuoai-publish/scripts/main.mjs list-accounts
-```
+- 仓库不包含账号凭证、Cookie、个人形象 ID、声音 ID、私人 OSS 地址或发布账号 ID。
+- 不把 OAuth 凭证写入 Skill、提示词、日志、任务状态或 Git 仓库。
+- 私有 `BIHUOAI_USER_CONFIG.md`、任务回执和带签名的临时上传信息不得提交到公开仓库。
+- 日志只保留任务 ID、状态和必要错误，不输出一次性上传签名。
 
-正式发布前必须确认标题、视频、封面、账号和时间：
+## License
 
-```bash
-node bihuoai-publish/scripts/main.mjs publish \
-  --title '视频标题' \
-  --video-url 'https://example.com/video.mp4' \
-  --cover-url 'https://example.com/cover.jpg' \
-  --target '平台编码:账号uniqueId' \
-  --confirm-publish
-```
-
-### 7. 视频全流程
-
-建议使用状态文件，避免中断后重复消耗算力：
-
-```bash
-node bihuoai-video-pipeline/scripts/main.mjs run \
-  --title '视频标题' \
-  --text-file ./口播稿.txt \
-  --tts-output ./口播稿.朗读版.txt \
-  --avatar-name '你的形象名称' \
-  --voice-name '你的声音名称' \
-  --template-name '你选择的模板名称' \
-  --confirm-create --confirm-clip \
-  --state-file ./视频任务状态.json
-```
-
-发布是独立授权。只同意生成或剪辑，不代表同意发布；只有提供目标账号并增加 `--confirm-publish` 才会提交发布。
-
-## 安全设计
-
-- 链接提取必须显式增加 `--confirm-extract`。
-- 素材上传必须显式增加 `--confirm-upload`。
-- 视频封面生成必须显式增加 `--confirm-generate`；成功生成后不会自动再生第二版。
-- 数字人合成必须显式增加 `--confirm-create`。
-- 智能剪辑必须显式增加 `--confirm-clip`。
-- 正式发布必须显式增加 `--confirm-publish`。
-- 轮询超时不会自动创建新任务，避免重复扣费。
-- 全流程状态文件不保存 Open Key，但可能包含私有视频 URL，不要提交到仓库。
-- Open Key 可能被服务端撤销；认证失败时应重新生成凭证，不要把凭证写入错误日志或仓库。
-
-## 目录结构
-
-```text
-.
-├── EXTEND.md
-├── bihuoai-link-extract/
-│   └── references/ai-terminology.md
-├── bihuoai-material-upload/
-│   ├── references/api.md
-│   └── scripts/main.mjs
-├── bihuoai-video-cover/
-│   ├── references/api.md
-│   └── scripts/main.mjs
-├── bihuoai-digital-human/
-│   ├── references/tts-text-normalization.md
-│   └── scripts/tts-normalize.mjs
-├── bihuoai-smart-clip/
-├── bihuoai-publish/
-└── bihuoai-video-pipeline/
-    ├── references/api.md
-    └── scripts/bihuo-client.mjs
-```
-
-六个业务 Skill 共用 `bihuoai-video-pipeline/scripts/bihuo-client.mjs`，因此七个目录应作为一整套安装和更新。
-
-## 校验
-
-```bash
-for skill in bihuoai-*; do
-  python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py "$skill"
-done
-```
-
-正式生成前建议先运行列表接口和 `--dry-run`。下载后的成片可以使用 `ffprobe` 检查时长、编码和分辨率。
+按仓库维护者公布的许可证使用；平台能力、账号权限、计费和内容规范以必火全员IP营销平台当前规则为准。

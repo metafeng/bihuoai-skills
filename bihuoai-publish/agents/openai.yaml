@@ -2,3 +2,10 @@ interface:
   display_name: "必火AI视频发布"
   short_description: "管理已绑定发布账号，并将视频安全发布或定时发布到指定平台"
   default_prompt: "Use $bihuoai-publish to 检查发布账号并准备发布一条视频。"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "agent-bihuoai"
+      description: "必火全员IP营销平台 MCP"
+      transport: "streamable_http"
+      url: "https://agent.bihuoai.com/v1/mcp"

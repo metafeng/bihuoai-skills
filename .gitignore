@@ -2,6 +2,7 @@
 .env
 .env.*
 .bihuoai-skills/
+BIHUOAI_USER_CONFIG.md
 node_modules/
 *.mp4
 *.mov
