@@ -7,7 +7,7 @@
 # 默认成片档位不填写时使用公共默认 1（LITE，较省算力）。需要 PRO/超清时取消下一行注释。
 # default_video_version: 2
 default_speed: 1.0
-default_emotion: calm
+default_language_boost: Chinese
 tts_normalize: true
 
 # 为特定形象绑定专用声音。把 12345 换成真实形象 ID。
@@ -51,6 +51,8 @@ Skill 只读取文件顶部两个 `---` 之间的字段。删除需要启用字�
 形象和声音优先级为：用户本次明确指定 > 形象专用声音映射 > 私有全局默认 > 平台工具默认。公共 Skill 不提供跨账号兜底 ID。
 
 清晰度不配置时默认使用 `version=1`（LITE，较省算力；平台界面可能显示为“高清”）。希望默认使用更高质量的 PRO/超清档时，在私有配置中加入 `default_video_version: 2`。接口只接受 `1` 或 `2`，没有第三个更低清晰度枚举。
+
+文字模式默认使用 `default_speed: 1.0` 和 `default_language_boost: Chinese`。语速必须填写数字；当前 MCP 工具定义没有公开上下限，因此不要自行假设范围。语种增强还可按接口当前枚举改成 `Chinese,Yue`、`English`、`Japanese`、`auto` 等值。当前数字人创建接口不支持情绪、音调或音量参数，不要在配置中填写 `default_emotion`。
 
 ## 封面素材
 
