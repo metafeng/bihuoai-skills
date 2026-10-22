@@ -1,6 +1,6 @@
 # 必火AI Skills
 
-面向[必火全员IP营销平台](https://agent.bihuoai.com)的一组专业工作流 Skills。平台 MCP 负责账号授权、能力调用、数据访问与计费；本仓库负责数字人、封面、剪辑、发布等任务的业务流程、质量规则、默认配置和断点恢复。
+面向[必火全员IP营销平台](https://agent.bihuoai.com)的一组专业工作流 Skills。平台 MCP 负责账号授权、能力调用、数据访问与计费；本仓库负责文案、数字人、封面、剪辑、发布等任务的业务流程、质量规则、默认配置和断点恢复。
 
 ## MCP 与 Skills 的关系
 
@@ -14,16 +14,18 @@
 
 | Skill | 中文显示名称 | 作用 |
 | --- | --- | --- |
+| `bihuoai-copywriting` | 必火AI文案创作 | 把选题、素材和个人资料写成可直接口播的短视频文案 |
 | `bihuoai-link-extract` | 必火AI链接提取 | 提取视频口播文稿，并结合上下文校正 AI 术语 |
 | `bihuoai-material-upload` | 必火AI素材上传 | 上传本地图片、音频、视频或文档并返回素材 URL |
 | `bihuoai-video-cover` | 必火AI视频封面 | 用必火AI生图模型制作中文大字短视频封面 |
 | `bihuoai-digital-human` | 必火AI数字人合成 | 规范中文 TTS 朗读文本并创建数字人口播视频 |
 | `bihuoai-smart-clip` | 必火AI智能剪辑 | 查询模板并把已有视频制作成智能剪辑成片 |
 | `bihuoai-publish` | 必火AI视频发布 | 保存平台稿件，并在确认后提交到指定账号 |
-| `bihuoai-video-pipeline` | 必火AI视频全流程 | 串联合成、剪辑和发布，支持断点恢复 |
+| `bihuoai-video-pipeline` | 必火AI视频全流程 | 串联文案、合成、剪辑和发布，支持断点恢复 |
 
 ```text
-视频分享链接 → 链接提取（可选） → 数字人合成 → 智能剪辑（可选） → 视频发布（可选）
+选题或想法 → 文案创作 → 数字人合成 → 智能剪辑（可选） → 视频发布（可选）
+视频分享链接 → 链接提取 → 文案创作 → 数字人合成 → 智能剪辑（可选） → 视频发布（可选）
 本地素材 → 素材上传 → 公网 URL → 数字人 / 生图 / 剪辑 / 发布
 人物或视频底图 + 标题 → 视频封面 → 封面 URL → 视频发布（可选）
 ```
@@ -51,8 +53,9 @@ codex mcp add agent-bihuoai --url https://agent.bihuoai.com/v1/mcp
 在 Codex 中新建对话，复制下面整段指令：
 
 ```text
-请使用 $skill-installer，从 GitHub 公共仓库 metafeng/bihuoai-skills 的 main 分支安装以下 7 个 Skill 到 Codex：
+请使用 $skill-installer，从 GitHub 公共仓库 metafeng/bihuoai-skills 的 main 分支安装以下 8 个 Skill 到 Codex：
 
+- bihuoai-copywriting
 - bihuoai-link-extract
 - bihuoai-material-upload
 - bihuoai-video-cover
@@ -80,6 +83,7 @@ cd bihuoai-skills
 mkdir -p ~/.codex/skills
 
 for skill in \
+  bihuoai-copywriting \
   bihuoai-link-extract \
   bihuoai-material-upload \
   bihuoai-video-cover \
@@ -147,10 +151,11 @@ Invoke-WebRequest `
 
 ## Codex 中的中文显示名称
 
-7 个 Skill 的 `agents/openai.yaml` 都已经配置中文 `display_name`。在支持该元数据的 Codex 界面中，Skill 列表和选择入口会显示中文名称：
+8 个 Skill 的 `agents/openai.yaml` 都已经配置中文 `display_name`。在支持该元数据的 Codex 界面中，Skill 列表和选择入口会显示中文名称：
 
 | 中文显示名称 | 提示词中的调用标识 |
 | --- | --- |
+| 必火AI文案创作 | `$bihuoai-copywriting` |
 | 必火AI链接提取 | `$bihuoai-link-extract` |
 | 必火AI素材上传 | `$bihuoai-material-upload` |
 | 必火AI视频封面 | `$bihuoai-video-cover` |
@@ -181,6 +186,10 @@ Invoke-WebRequest `
 公开模板见 [BIHUOAI_USER_CONFIG.example.md](./BIHUOAI_USER_CONFIG.example.md)。复制后去掉 `.example`，作为用户自己的 `BIHUOAI_USER_CONFIG.md`。Skill 会优先采用用户在本次任务中明确指定的资源，其次读取私有默认；最终仍要通过 MCP 的实时列表核验资源属于当前授权账号。
 
 ## 各 Skill 的核心行为
+
+### 文案创作
+
+读取用户本次提供或在当前项目中配置的选题、参考素材和个人资料，生成标题、口播正文、发布描述与简短创作说明。Skill 不包含元峰或其他特定人物的经历、知识库路径和固定风格；分享链接必须先提取原始内容，已经确认的口播稿不会被全流程重复改写。
 
 ### 链接提取
 

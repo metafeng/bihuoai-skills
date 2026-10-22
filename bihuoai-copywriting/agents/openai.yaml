@@ -1,0 +1,6 @@
+interface:
+  display_name: "必火AI文案创作"
+  short_description: "把选题、参考素材和个人资料写成可直接口播的短视频文案"
+  default_prompt: "Use $bihuoai-copywriting to 根据我的素材写一篇可直接口播的短视频文案。"
+policy:
+  allow_implicit_invocation: true

@@ -1,7 +1,7 @@
 interface:
   display_name: "必火AI视频全流程"
-  short_description: "串联数字人合成、智能剪辑和视频发布，完成可恢复的视频工作流"
-  default_prompt: "Use $bihuoai-video-pipeline to 从口播文案开始完成数字人视频全流程。"
+  short_description: "串联文案、数字人、剪辑和发布，完成可恢复的视频工作流"
+  default_prompt: "Use $bihuoai-video-pipeline to 从选题或参考链接开始完成视频全流程。"
 dependencies:
   tools:
     - type: "mcp"
