@@ -4,6 +4,8 @@
 # default_avatar_name: 你的形象名称
 # default_voice_id: voice_请替换为你的声音ID
 # default_voice_name: 你的声音名称
+# 默认成片档位不填写时使用公共默认 1（LITE，较省算力）。需要 PRO/超清时取消下一行注释。
+# default_video_version: 2
 default_speed: 1.0
 default_emotion: calm
 tts_normalize: true
@@ -46,7 +48,9 @@ Skill 只读取文件顶部两个 `---` 之间的字段。删除需要启用字�
 4. 把需要的默认值写入本文件。
 5. 每次真正创建前仍用实时列表核验资源存在；账号切换后不要沿用旧账号 ID。
 
-优先级为：用户本次明确指定 > 形象专用声音映射 > 私有全局默认 > 平台工具默认。公共 Skill 不提供跨账号兜底 ID。
+形象和声音优先级为：用户本次明确指定 > 形象专用声音映射 > 私有全局默认 > 平台工具默认。公共 Skill 不提供跨账号兜底 ID。
+
+清晰度不配置时默认使用 `version=1`（LITE，较省算力；平台界面可能显示为“高清”）。希望默认使用更高质量的 PRO/超清档时，在私有配置中加入 `default_video_version: 2`。接口只接受 `1` 或 `2`，没有第三个更低清晰度枚举。
 
 ## 封面素材
 

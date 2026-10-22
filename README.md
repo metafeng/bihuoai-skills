@@ -137,6 +137,7 @@ Invoke-WebRequest `
 配置文件可以保存以下用户默认值：
 
 - 默认数字人形象和声音。
+- 默认成片档位；不配置时使用较省算力的 `version=1`，需要 PRO/超清时设置 `default_video_version: 2`。
 - 某个形象专用的声音搭配。
 - 默认语速、情绪和 TTS 数字规范化开关。
 - 视频封面默认底图与用户主动选择时才使用的历史封面。
@@ -192,6 +193,8 @@ Invoke-WebRequest `
 ### 数字人合成
 
 使用 `list_avatars` 和 `list_voices` 核验形象及声音，然后调用 `create_digital_human_video`。文本驱动模式会先生成 TTS 朗读版，例如把年份 `2020年` 转成“二零二零年”、数量 `2个` 转成“两个”；用途不明确的数字保留原样并继续，不询问、不阻塞。
+
+清晰度未指定时，公共 Skill 固定使用较省算力的 `version=1`（LITE，平台界面可能显示为“高清”）。只有用户本次明确选择更高质量，或私有 `BIHUOAI_USER_CONFIG.md` 写有 `default_video_version: 2` 时，才使用 PRO/超清。当前接口只有 `1` 和 `2` 两档，没有第三个更低清晰度枚举。
 
 ### 视频封面
 
