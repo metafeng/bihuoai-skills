@@ -2,12 +2,12 @@
 name: bihuoai-video-studio
 description: 用户使用必火AI制作短视频文案、提取分享链接文稿、整理视频素材、生成数字人口播、制作封面、智能剪辑、保存发布草稿或发布视频时使用；也适用于串联上述流程及查询已有任务。不负责与内容生产无关的业务。
 metadata:
-  display_name: 必火 AI 短视频创作
+  display_name: 必火AI
   display_description: 在豆包工作中组织文案、数字人、封面、剪辑和发布流程，按需读取对应说明，使用当前账号资源并在生成和发布前确认。
   icon: ./assets/icon.png
 ---
 
-# 必火 AI 短视频创作
+# 必火AI
 
 只使用本插件的 `agent-bihuoai` 远程服务和豆包当前可用能力。下列参考文件是本技能内部说明，不是独立技能，不要求用户安装其他技能。
 

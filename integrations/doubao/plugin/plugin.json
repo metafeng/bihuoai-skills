@@ -5,8 +5,8 @@
   "extensions": {
     "com.doubao": {
       "displayName": {
-        "zh": "必火 AI 视频创作",
-        "en": "BihuoAI Video Studio"
+        "zh": "必火AI",
+        "en": "BihuoAI"
       },
       "displayDescription": {
         "zh": "从选题和文稿制作数字人口播视频，可按需生成封面、剪辑和发布。每个阶段分别确认，支持查询原任务和继续处理。"
@@ -16,8 +16,8 @@
       "mcpServers": {
         "agent-bihuoai": {
           "displayName": {
-            "zh": "必火 AI 视频创作",
-            "en": "BihuoAI Video Studio"
+            "zh": "必火AI",
+            "en": "BihuoAI"
           },
           "displayDescription": {
             "zh": "访问当前授权账号的形象、声音、模型、模板和任务，提供数字人、封面、剪辑及发布能力。"

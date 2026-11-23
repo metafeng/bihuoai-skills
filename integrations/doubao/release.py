@@ -106,7 +106,10 @@ def validate_package(package):
     def display(value, path):
         check("COPY_BYTES", isinstance(value,str) and 0 < len(value.encode()) < 64, path)
         check("NAME_TERMS", isinstance(value,str) and not BAD_DISPLAY.search(value), path)
-        check("COPY_SPACE", isinstance(value,str) and not MIXED.search(value), path)
+        if value == "必火AI":
+            checks.append({"id":"COPY_SPACE_USER_OVERRIDE","status":"USER_OVERRIDE","detail":path+"：用户明确指定品牌连续写法“必火AI”，不按通用中英文空格规则判定通过"})
+        else:
+            check("COPY_SPACE", isinstance(value,str) and not MIXED.search(value), path)
     def local_file(current, target, code):
         okay = isinstance(target,str) and target.startswith("./")
         resolved = (current / target).resolve() if isinstance(target,str) else current
@@ -209,7 +212,7 @@ def build(out):
       "## 已完成","",
       "- 保留一个远程 MCP；8 个原顶层技能收敛为一个入口，按需读取内部流程。",
       "- 保留文案、链接提取、素材处理、数字人、封面、剪辑和发布流程；重写原先的跨技能安装依赖。",
-      "- 三层展示名统一中英文空格，并显式提供官方品牌 512×512 PNG 图标。",
+      "- 插件、连接器及技能展示名按用户明确要求统一为“必火AI”，显式提供官方品牌 512×512 PNG 图标。品牌连续写法作为用户覆盖项单独记录，不冒充通用空格规则通过。",
       "- 采用 OAuth DCR 配置，移除密钥版鉴权目录和运行期本地脚本。",
       "- 补充输入/输出内容安全、权益检查、分阶段费用确认、发布独立确认与任务恢复。",
       "- 本地上传没有可用服务链路时明确转素材页操作，不把上传准备接口当成已完成上传。","",
