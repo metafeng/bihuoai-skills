@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "agent-bihuoai": {
+      "type": "streamable-http",
+      "url": "https://agent.bihuoai.com/v1/mcp"
+    }
+  }
+}
+

@@ -1,0 +1,50 @@
+{
+  "purpose": "豆包商店插件服务端联调契约，未部署",
+  "maxToolCount": 30,
+  "mcpServices": 1,
+  "transport": "streamable-http",
+  "auth": "OAuth DCR public client + PKCE S256",
+  "knownWorkflowTools": [
+    "get_usage_guide",
+    "get_account_balance",
+    "list_avatars",
+    "list_voices",
+    "create_digital_human_video",
+    "get_dh_video_status",
+    "extract_content",
+    "list_ai_media_models",
+    "create_ai_media",
+    "get_ai_media_status",
+    "list_clip_templates",
+    "create_clip_task",
+    "get_clip_task_status",
+    "list_media_assets",
+    "create_media_group",
+    "save_media_asset",
+    "prepare_file_upload",
+    "create_pub_article",
+    "submit_publication",
+    "open_web_page"
+  ],
+  "requiredAdditionalCapabilities": [
+    "查询当前绑定的发布账号：沿用实际已有工具名称",
+    "查询发布记录或桌面客户端最终回执：沿用实际已有工具名称",
+    "当前豆包附件到平台素材的受支持上传链路；未实现时使用素材页上传",
+    "接口端输入/输出内容安全审核和明确审核状态",
+    "所有写入/扣费操作的服务端幂等"
+  ],
+  "requirements": [
+    "tools/list 实际完整结果不超过 30，分页也计入总数；过滤 tools/call 同样限制作用域",
+    "不能只在 Skill 中列少量工具或在 mcp.json 添加未发布的过滤字段",
+    "必须保留生产 HTTPS 地址，新增专用服务需同步其 PRM resource",
+    "DCR 注册及真实豆包回调兼容需要实测；不得全域放开 HTTPS 回调或关闭精确匹配",
+    "未登录返回 401 与资源元数据挑战；不能弱化现有鉴权",
+    "公开包不得包含任何凭据、预注册客户端或固定回调"
+  ],
+  "historicalToolCount": {
+    "date": "2026-11-17",
+    "count": 60,
+    "status": "历史证据，当前待复测"
+  }
+}
+
