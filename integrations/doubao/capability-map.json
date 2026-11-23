@@ -1,0 +1,187 @@
+{
+  "version": "1.1.1",
+  "scope": "原八个技能；只核验规则覆盖，不等同在线执行",
+  "groups": [
+    {
+      "sourceSkill": "bihuoai-copywriting",
+      "label": "文案创作",
+      "sourceSha256": "6cc090ea28b5a00a832ea644358d60b3a80fde77f3769833d80078f9a31c554e",
+      "mergedReferences": [
+        "copywriting.md"
+      ],
+      "ruleTermsChecked": [
+        "标题建议",
+        "口播正文",
+        "发布描述",
+        "创作说明",
+        "3 个"
+      ],
+      "missing": [],
+      "ruleCoverage": "COVERED",
+      "runtimeStatus": "NOT_YET_VERIFIED",
+      "runtimeConditions": [
+        "当前OAuth授权、实际工具、账号资源及费用确认"
+      ]
+    },
+    {
+      "sourceSkill": "bihuoai-digital-human",
+      "label": "数字人合成",
+      "sourceSha256": "6b029c1076e486fe20c86d45c87064307c609df85abaaf01d51e20dfccb23814",
+      "mergedReferences": [
+        "digital-human.md",
+        "tts-normalization.md"
+      ],
+      "ruleTermsChecked": [
+        "list_avatars",
+        "list_voices",
+        "audioUrl",
+        "speed=1.0",
+        "languageBoost=Chinese",
+        "dhVideoId"
+      ],
+      "missing": [],
+      "ruleCoverage": "COVERED",
+      "runtimeStatus": "NOT_YET_VERIFIED",
+      "runtimeConditions": [
+        "当前OAuth授权、实际工具、账号资源及费用确认"
+      ]
+    },
+    {
+      "sourceSkill": "bihuoai-link-extract",
+      "label": "链接提取",
+      "sourceSha256": "f3c0ab0ec91ba278b188517fae2f1ca2a8bd3ce37c4ca76ec001abcee64121bc",
+      "mergedReferences": [
+        "link-extract.md",
+        "ai-terminology.md"
+      ],
+      "ruleTermsChecked": [
+        "extract_content",
+        "文稿.raw.txt",
+        "WorkBuddy",
+        "医学",
+        "GEO"
+      ],
+      "missing": [],
+      "ruleCoverage": "COVERED",
+      "runtimeStatus": "NOT_YET_VERIFIED",
+      "runtimeConditions": [
+        "当前OAuth授权、实际工具、账号资源及费用确认"
+      ]
+    },
+    {
+      "sourceSkill": "bihuoai-material-upload",
+      "label": "素材上传",
+      "sourceSha256": "50efe23de9edb5897950c4d78cad5bdc63255accd357bc95ccda663b0f1d7bea",
+      "mergedReferences": [
+        "materials.md"
+      ],
+      "ruleTermsChecked": [
+        "fileName",
+        "md5",
+        "exists: true",
+        "prepare_file_upload",
+        "save_media_asset",
+        "回调",
+        "字节"
+      ],
+      "missing": [],
+      "ruleCoverage": "COVERED",
+      "runtimeStatus": "NOT_YET_VERIFIED",
+      "runtimeConditions": [
+        "豆包附件及平台上传链路支持真实文件字节传递，否则需用户素材页操作"
+      ]
+    },
+    {
+      "sourceSkill": "bihuoai-video-cover",
+      "label": "视频封面",
+      "sourceSha256": "41c4ea2bbd4b5227841ec220272d078acb5ecd9f0b5f0a23c5e32cfcfcbc88a4",
+      "mergedReferences": [
+        "video-cover.md",
+        "cover-spec.md",
+        "cover-prompt.md"
+      ],
+      "ruleTermsChecked": [
+        "hero",
+        "comparison",
+        "workflow",
+        "tutorial",
+        "opinion",
+        "gpt-image-2.5-sunburst",
+        "qwen-image-3.0-pro",
+        "referImages"
+      ],
+      "missing": [],
+      "ruleCoverage": "COVERED",
+      "runtimeStatus": "NOT_YET_VERIFIED",
+      "runtimeConditions": [
+        "当前OAuth授权、实际工具、账号资源及费用确认"
+      ]
+    },
+    {
+      "sourceSkill": "bihuoai-smart-clip",
+      "label": "智能剪辑",
+      "sourceSha256": "0966357a855520117b18ebdeca96dee598fa39f52441b736af52e9c30eb10873",
+      "mergedReferences": [
+        "smart-clip.md"
+      ],
+      "ruleTermsChecked": [
+        "mainVideoUrl",
+        "list_clip_templates",
+        "create_clip_task",
+        "get_clip_task_status",
+        "编辑模式"
+      ],
+      "missing": [],
+      "ruleCoverage": "COVERED",
+      "runtimeStatus": "NOT_YET_VERIFIED",
+      "runtimeConditions": [
+        "当前OAuth授权、实际工具、账号资源及费用确认"
+      ]
+    },
+    {
+      "sourceSkill": "bihuoai-publish",
+      "label": "视频发布",
+      "sourceSha256": "95eafed56d1e286d687d9bd39af972b916520633b584397a88554563ffb9cc4a",
+      "mergedReferences": [
+        "publish.md"
+      ],
+      "ruleTermsChecked": [
+        "create_pub_article",
+        "submit_publication",
+        "定时",
+        "时区",
+        "最终",
+        "账号"
+      ],
+      "missing": [],
+      "ruleCoverage": "COVERED",
+      "runtimeStatus": "NOT_YET_VERIFIED",
+      "runtimeConditions": [
+        "当前OAuth授权、实际工具、账号资源及费用确认"
+      ]
+    },
+    {
+      "sourceSkill": "bihuoai-video-pipeline",
+      "label": "全流程与恢复",
+      "sourceSha256": "5e109b596a34838114cec1524bd3f17b6f8f77126a039acce87f38102efd47b2",
+      "mergedReferences": [
+        "pipeline.md"
+      ],
+      "ruleTermsChecked": [
+        "confirmed_input",
+        "pending",
+        "skipped",
+        "updatedAt",
+        "submissions",
+        "taskId",
+        "原子"
+      ],
+      "missing": [],
+      "ruleCoverage": "COVERED",
+      "runtimeStatus": "NOT_YET_VERIFIED",
+      "runtimeConditions": [
+        "当前OAuth授权、实际工具、账号资源及费用确认"
+      ]
+    }
+  ]
+}

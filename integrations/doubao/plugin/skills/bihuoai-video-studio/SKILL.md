@@ -26,10 +26,10 @@ metadata:
 | 用户目标 | 必读说明 |
 | --- | --- |
 | 写标题、口播稿和发布描述 | [文案创作](references/copywriting.md) |
-| 分享链接转文稿 | [链接提取](references/link-extract.md) |
+| 分享链接转文稿 | [链接提取](references/link-extract.md)及[术语校正](references/ai-terminology.md) |
 | 准备图片、音频、视频等素材 | [素材处理](references/materials.md) |
 | 数字人口播视频 | [数字人合成](references/digital-human.md)及[TTS 读法](references/tts-normalization.md) |
-| 中文短视频封面 | [视频封面](references/video-cover.md)及[封面提示词](references/cover-prompt.md) |
+| 中文短视频封面 | [视频封面](references/video-cover.md)、[封面输入规格](references/cover-spec.md)及[封面提示词](references/cover-prompt.md) |
 | 已有视频二次剪辑 | [智能剪辑](references/smart-clip.md) |
 | 绑定账号预检、保存草稿、正式或定时发布 | [视频发布](references/publish.md) |
 | 串联流程、继续已有任务 | [全流程与恢复](references/pipeline.md) |
@@ -43,6 +43,13 @@ metadata:
 3. 真人形象、声音、作品和商标只按用户有权使用的范围处理；不因提供了素材就假定可以冒用他人身份。
 4. 工具若返回审核拒绝、结果待审或权限错误，保留原任务状态，停止该阶段。不要换模型、改提示词或改账号绕过限制。
 5. 编排检查不能代替接口审核。只在服务返回审核通过且能检查实际输出时交付；不能验证的部分明确说明，不声称“已审核通过”。
+
+## 当前用户偏好与资源默认值
+
+- 使用用户本次明确指定的选择；也可使用用户明确提供到本任务的偏好配置作为候选，不自动读取本机全局私有文件。
+- 候选字段包括 default_avatar_id、default_voice_id、default_video_version、default_speed、default_language_boost、avatar_voice_<形象ID>、TTS 开关、cover_ 字段和 terminology_file。只读取用户点名的附件或有权限的任务资料，不能扫描目录。
+- 优先级为本次明确指定 > 本任务提供的形象声音映射 > 本任务提供的默认值 > 当前工具默认。所有 ID 必须重新在当前账号实时列表匹配。
+- 只读偏好不代表创建、扣费或发布授权，不在输出或公开记录中暴露私有资源配置。
 
 ## 每个阶段分别确认
 
