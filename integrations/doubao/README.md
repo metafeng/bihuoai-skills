@@ -9,7 +9,7 @@
 在项目根目录执行：
 
 ```bash
-python3 bihuoai-skills/integrations/doubao/release.py --out outputs/doubao-plugin/release-1.1.0
+python3 bihuoai-skills/integrations/doubao/release.py --out outputs/doubao-plugin/release-1.1.1
 ```
 
 结果包括候选 ZIP 和自查结果。静态通过不等于服务端或豆包客户端验收通过；任何未验证项目都保留为阻断，不输出“可提审”的误导结论。
@@ -19,7 +19,7 @@ python3 bihuoai-skills/integrations/doubao/release.py --out outputs/doubao-plugi
 开发期只读网络检查：
 
 ```bash
-python3 bihuoai-skills/integrations/doubao/probe_oauth.py --out outputs/doubao-plugin/release-1.1.0/oauth-probe.json
+python3 bihuoai-skills/integrations/doubao/probe_oauth.py --out outputs/doubao-plugin/release-1.1.1/oauth-probe.json
 ```
 
 该检查不读取凭据、不注册客户端、不请求授权、不调用付费业务，仅请求生产 MCP 的未授权初始化及公开 OAuth 元数据。网络失败标为不可验证，不认定服务宕机。

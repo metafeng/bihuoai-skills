@@ -223,7 +223,7 @@ def build(out):
     shutil.copyfile(ROOT/"backend-handoff.md",out/"backend-handoff.md")
     lines+=["","## 已核实地址","", "- 产品：https://agent.bihuoai.com","- MCP：https://agent.bihuoai.com/v1/mcp","- 隐私政策："+str(config.get("privacyPolicyUrl")),"",
       "## 交付文件","", "- 插件候选："+archive.name,"- 逐项机器检查：preflight.json","- 服务端联调：backend-handoff.md","- 生产只读探测：oauth-probe.json（如已运行）","",
-      "未上传、未替换公开草稿、未提交审核。修改本插件不等于部署生产 MCP 服务。","",
+      "本构建命令不会上传或提交审核；后台实际状态见对应评测报告。修改本插件不等于部署生产 MCP 服务。","",
       "规范核对补充：2026-11-23 官方技能规范将 metadata.icon 列为可选；旧报告将其列为必填不准确。本包仍提供该图标以满足更严格的伙伴自查。",""]
     (out/"CHANGE_REPORT.md").write_text("\n".join(lines))
     return report
