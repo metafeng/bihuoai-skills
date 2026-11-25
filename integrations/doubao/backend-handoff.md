@@ -1,6 +1,6 @@
 # 必火 AI 豆包插件：服务端联调交接
 
-日期：2026-11-23。包体版本：1.1.1。此文档列出待验证及待实现事项，不代表生产端已经部署修改。
+日期：2026-11-25。包体版本：1.1.2。此文档列出待验证及待实现事项，不代表生产端已经部署修改。
 
 产品首页：https://agent.bihuoai.com
 
@@ -11,7 +11,7 @@ https://oss.bihuoai.com/img/20261117175613_7710184772.html
 
 ## 1. 工具实际总数
 
-2026-11-17 旧评测记录为 60 个工具；这不是当前实时计数。正式提包前，授权生产账号调用 tools/list，跟随 nextCursor 直到结束，总数须不超过 30。
+正式提包前，授权生产账号调用 tools/list，跟随 nextCursor 直到结束，核实完整总数。2026-11-25 接入指南 revision 1522 的“数量与要求”写明推荐不超过 30 个，超出时进入专项评估；伙伴自查手册及指南部分概述仍有不超过 30 个的表述。建议控制在 30 个内，或由平台确认专项评估路径，不能认定超过 30 个必然导致发布错误 9000010。
 
 backend-contract.json 提供当前创作流程需要的 20 个已知工具名称，以及绑定账号、发布回执等补充能力。先核对生产工具定义，再形成完整允许清单。不能通过删除能力造成流程不可用，也不能编造工具名称。
 
@@ -19,11 +19,11 @@ backend-contract.json 提供当前创作流程需要的 20 个已知工具名称
 
 ## 2. OAuth DCR 与豆包首次授权
 
-公开安装说明目前列出的回调主要为本机及 WorkBuddy；不据此判断豆包一定失败，但必须实测豆包真实回调。
+公开安装说明目前列出的回调主要为本机及 WorkBuddy。2026-11-25 指南已明确豆包云端回调受控前缀，现有服务对此前缀的兼容性探测明确返回 invalid_redirect_uri，见下方实测补充。豆包实际发布使用的完整回调仍需平台提供。
 
 检查未授权 MCP 返回 401 与 Bearer resource_metadata 挑战；公开 PRM、ASM 均为 HTTPS JSON 且不重定向；resource 与 MCP URL、issuer 与选中授权服务器逐字符一致。DCR 支持公共客户端，authorization_code + PKCE S256，token_endpoint_auth_methods_supported 是包含 none 的无重复字符串数组。
 
-按豆包实际文档及真实注册请求支持所需回调，不要添加猜测回调、放开任意 HTTPS 域名或关闭回调精确匹配。授权码须与 client_id、redirect_uri、PKCE 绑定且一次性使用。所有凭据由运行环境托管，不能进入公开包。
+按豆包实际文档及真实注册请求支持所需回调。指南允许在服务安全策略支持时，仅对 HTTPS、Host api.doubao-dev.com、路径前缀 /api/oauth/v1/callback/personal/cb_ah_ 实施注册准入；如要求提前逐条登记，则向平台索要实际完整 URI。不得添加猜测的生产回调或放开任意 HTTPS 域名。即使注册准入支持受控前缀，授权与换 Token 仍须与该客户端实际登记的完整 redirect_uri 精确匹配。授权码须与 client_id、redirect_uri、PKCE、Resource 绑定且一次性使用。所有凭据由运行环境托管，不能进入公开包。
 
 probe_oauth.py 只验证公开挑战和元数据，不执行 DCR 注册、授权码交换或真实用户授权；元数据通过仍须豆包端首次安装验收。
 
@@ -45,6 +45,10 @@ prepare_file_upload 是准备上传，不等于字节已上传。核实豆包当
 
 ## 2026-11-25 实测补充
 
-豆包桌面端OAuth恢复后，生产服务六类只读查询全部成功。检索可见42个去重工具名，完整tools/list总数未取得。伙伴手册当前revision64仍要求所有MCP工具合计不超过30。候选导出范围见doubao-server-export-proposal.json；其中5个名称仅由指南提及，需核对服务端注册表，不能将候选当作已部署能力。
+豆包桌面端 OAuth 恢复后，生产服务六类只读查询全部成功。检索可见 42 个去重工具名，完整 tools/list 总数未取得。工具数需按最新指南核对收敛或专项评估，不能作为 9000010 的已证实原因。候选导出范围见 doubao-server-export-proposal.json；其中 5 个名称仅由指南提及，需核对服务端注册表，不能将候选当作已部署能力。
 
-全新v1.1.2草稿仍在授权配置发布阶段返回9000010，客户端授权成功没有消除发布错误。云端回调限制与本机授权是不同路径：域名探测不是平台实际回调，需拿到真实redirect_uri及平台底层日志后定位；不得通过全域放开回调、取消PKCE或改为共享密钥规避。
+全新 v1.1.2 草稿保存后于北京时间 23:01:19 重试，仍在授权配置发布阶段返回 9000010。最新 LogID：202611252301169D6387AF0D21A7434F62。客户端授权成功没有消除发布错误。
+
+指南来源：https://bytedance.larkoffice.com/docx/J5o2dZK8hoJItxxNQyocHgRzncb （revision 1522）。使用指南公布前缀下的合成测试地址 https://api.doubao-dev.com/api/oauth/v1/callback/personal/cb_ah_bihuoai_diagnostic 发起 DCR 兼容性检查，服务返回 invalid_redirect_uri，错误说明仅接收本机回环、workbuddy 私有协议和 WorkBuddy 云端回调域名。该地址仅用于诊断，未取得 Token，也不是平台的实际回调。由此确认服务端当前回调准入规则不兼容指南的云端前缀；是否直接触发本次 9000010，须由平台检查该 LogID 对应的外部调用及内部授权校验日志。
+
+优先修复 OAuth/MCP 后端的 DCR 回调准入规则。当前仓库没有生产 OAuth 后端，不能通过改 ZIP、Skill、Logo 或前端页面完成该修复；需生产后端代码目录、仓库或受控部署配置入口。
