@@ -1,0 +1,126 @@
+{
+  "status": "DESIGN_ONLY_NOT_DEPLOYED",
+  "purpose": "豆包专用MCP导出范围候选，不能通过修改mcp.json在客户端实现",
+  "maxTools": 30,
+  "candidateToolNames": [
+    "get_usage_guide",
+    "get_account_balance",
+    "list_my_tasks",
+    "open_web_page",
+    "list_avatars",
+    "create_digital_human_video",
+    "get_dh_video_status",
+    "list_voices",
+    "list_voice_options",
+    "text_to_speech",
+    "list_ai_media_models",
+    "create_ai_media",
+    "get_ai_media_status",
+    "list_clip_templates",
+    "create_clip_task",
+    "get_clip_task_status",
+    "list_media_assets",
+    "save_media_asset",
+    "create_media_group",
+    "create_pub_article",
+    "list_pub_accounts",
+    "submit_publication",
+    "get_music_status",
+    "extract_media",
+    "get_transcript_media_status",
+    "extract_content",
+    "prepare_file_upload",
+    "save_copy_script",
+    "search_copy_scripts",
+    "create_music"
+  ],
+  "observedInAuthorizedClient": [
+    "get_usage_guide",
+    "get_account_balance",
+    "list_my_tasks",
+    "open_web_page",
+    "list_avatars",
+    "create_digital_human_video",
+    "get_dh_video_status",
+    "list_voices",
+    "list_voice_options",
+    "text_to_speech",
+    "list_ai_media_models",
+    "create_ai_media",
+    "get_ai_media_status",
+    "list_clip_templates",
+    "create_clip_task",
+    "get_clip_task_status",
+    "list_media_assets",
+    "save_media_asset",
+    "create_media_group",
+    "create_pub_article",
+    "list_pub_accounts",
+    "submit_publication",
+    "get_music_status",
+    "extract_media",
+    "get_transcript_media_status"
+  ],
+  "guideOnlyRequireServerRegistryVerification": [
+    "extract_content",
+    "prepare_file_upload",
+    "save_copy_script",
+    "search_copy_scripts",
+    "create_music"
+  ],
+  "checksBeforeDeployment": [
+    "核对工具注册表中每个名称及真实Schema",
+    "确认八类流程必需工具全部保留，未确认工具不能静默忽略",
+    "若有更合适的聚合工具，须实现后再同步技能，不添加不存在的调用",
+    "完整分页tools/list总量<=30，tools/call同样限制范围",
+    "维持OAuth、PKCE、精确回调匹配和费用确认",
+    "保留已上线WorkBuddy服务的既有行为；如采用新端点，同步PRM resource、插件地址与客户端验收"
+  ],
+  "workflowCoverage": {
+    "copywriting": [
+      "search_copy_scripts",
+      "save_copy_script"
+    ],
+    "digitalHuman": [
+      "list_avatars",
+      "list_voices",
+      "list_voice_options",
+      "text_to_speech",
+      "create_digital_human_video",
+      "get_dh_video_status"
+    ],
+    "linkExtract": [
+      "extract_content",
+      "extract_media",
+      "get_transcript_media_status"
+    ],
+    "materials": [
+      "prepare_file_upload",
+      "list_media_assets",
+      "save_media_asset",
+      "create_media_group"
+    ],
+    "cover": [
+      "list_ai_media_models",
+      "create_ai_media",
+      "get_ai_media_status"
+    ],
+    "clip": [
+      "list_clip_templates",
+      "create_clip_task",
+      "get_clip_task_status"
+    ],
+    "publish": [
+      "list_pub_accounts",
+      "create_pub_article",
+      "submit_publication"
+    ],
+    "resume": [
+      "list_my_tasks"
+    ],
+    "music": [
+      "create_music",
+      "get_music_status"
+    ]
+  }
+}
