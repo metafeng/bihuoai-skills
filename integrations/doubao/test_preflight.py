@@ -60,7 +60,8 @@ class PackageTests(unittest.TestCase):
     def test_mcp_query_is_rejected(self):
         path = self.root / 'mcp.json'
         data = json.loads(path.read_text())
-        data['mcpServers']['agent-bihuoai']['url'] += '?key=test'
+        server = next(iter(data['mcpServers'].values()))
+        server['url'] += '?key=test'
         path.write_text(json.dumps(data))
         self.assertIn('MCP_URL', self.failed())
 
