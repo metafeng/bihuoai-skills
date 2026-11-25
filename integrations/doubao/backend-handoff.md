@@ -19,11 +19,21 @@ backend-contract.json 提供当前创作流程需要的 20 个已知工具名称
 
 ## 2. OAuth DCR 与豆包首次授权
 
-公开安装说明目前列出的回调主要为本机及 WorkBuddy。2026-11-25 指南已明确豆包云端回调受控前缀，现有服务对此前缀的兼容性探测明确返回 invalid_redirect_uri，见下方实测补充。豆包实际发布使用的完整回调仍需平台提供。
+公开安装说明目前列出的回调主要为本机及 WorkBuddy。2026-11-25 指南及生态团队回复已明确豆包云端回调受控前缀，现有服务对此前缀的兼容性探测明确返回 invalid_redirect_uri，见下方实测补充。平台在 DCR 动态注册时按当前运行实例生成带随机后缀的完整回调，没有可预先提供的单一固定地址。支持受控前缀注册准入时，直接从真实 DCR 请求登记完整 URI；只有服务必须提前逐条加白且不支持前缀时，才需生态团队取得实际 URI 后逐条登记。
 
 检查未授权 MCP 返回 401 与 Bearer resource_metadata 挑战；公开 PRM、ASM 均为 HTTPS JSON 且不重定向；resource 与 MCP URL、issuer 与选中授权服务器逐字符一致。DCR 支持公共客户端，authorization_code + PKCE S256，token_endpoint_auth_methods_supported 是包含 none 的无重复字符串数组。
 
 按豆包实际文档及真实注册请求支持所需回调。指南允许在服务安全策略支持时，仅对 HTTPS、Host api.doubao-dev.com、路径前缀 /api/oauth/v1/callback/personal/cb_ah_ 实施注册准入；如要求提前逐条登记，则向平台索要实际完整 URI。不得添加猜测的生产回调或放开任意 HTTPS 域名。即使注册准入支持受控前缀，授权与换 Token 仍须与该客户端实际登记的完整 redirect_uri 精确匹配。授权码须与 client_id、redirect_uri、PKCE、Resource 绑定且一次性使用。所有凭据由运行环境托管，不能进入公开包。
+
+动态注册客户端名称固定为 `Doubao Connector`，若有客户端名称白名单须加入此精确名称。客户端名称由请求方提供，不能将名称视为身份认证或跳过 URI、PKCE 与用户授权校验的依据。
+
+后端实施与验收顺序：
+
+1. 在现有回调准入校验中增加豆包受控规则，保留现有本机和 WorkBuddy 规则；解析 URL 后校验 HTTPS、精确 Host 和完整路径前缀，不用整串字符串包含判断。拒绝用户名/密码、非标准端口、片段，以及伪装子域、相似域和错误路径。
+2. 对真实 DCR 请求的全部 redirect_uris 逐条验证，登记通过校验的完整 URI，不把带星号的前缀作为实际 redirect_uri。客户端名称白名单允许 `Doubao Connector`；Public Client 认证方式保持 `none`。
+3. 授权及换 Token 时继续精确匹配该客户端登记的完整回调；不把前缀匹配扩展到这两个环节。保留 PKCE S256、原始 state、Resource、Scope、一次性短时授权码和用户授权确认。
+4. 用两个不同随机后缀的诊断 URI 验证注册准入；仅属协议兼容性测试，不是生产回调登记。负例至少覆盖 HTTP、错误 Host、主机后缀伪装、凭据伪装、非标准端口、错误路径。随后由豆包实际安装流程完成真实授权、换 Token 和无副作用工具调用，并回归 WorkBuddy。
+5. 部署后重新保存并提交同一插件草稿，记录新 LogID；如果仍失败，交平台对照后端日志。没有部署证据时，不标记为已修复或已上架。
 
 probe_oauth.py 只验证公开挑战和元数据，不执行 DCR 注册、授权码交换或真实用户授权；元数据通过仍须豆包端首次安装验收。
 
