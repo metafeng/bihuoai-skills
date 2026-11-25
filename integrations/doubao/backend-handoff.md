@@ -2,6 +2,8 @@
 
 日期：2026-11-25。包体版本：1.1.2。此文档列出待验证及待实现事项，不代表生产端已经部署修改。
 
+开发集中处理请以 [集中整改与验收单](developer-remediation-checklist.md) 为主，逐项回传部署与验收结果；本文保留联调证据和背景。
+
 产品首页：https://agent.bihuoai.com
 
 生产 MCP：https://agent.bihuoai.com/v1/mcp

@@ -34,7 +34,7 @@
     "所有写入/扣费操作的服务端幂等"
   ],
   "requirements": [
-    "tools/list 实际完整结果不超过 30，分页也计入总数；过滤 tools/call 同样限制作用域",
+    "完整分页 tools/list 核实总量；目标<=30，保留必要功能，否则与平台确认专项评估；tools/call 使用相同授权范围",
     "不能只在 Skill 中列少量工具或在 mcp.json 添加未发布的过滤字段",
     "必须保留生产 HTTPS 地址，新增专用服务需同步其 PRM resource",
     "DCR 注册及真实豆包回调兼容需要实测；不得全域放开 HTTPS 回调或关闭精确匹配",
@@ -45,6 +45,6 @@
     "date": "2026-11-17",
     "count": 60,
     "status": "历史证据，当前待复测"
-  }
+  },
+  "maxToolCountPolicy": "30 is proposed export target; guide revision 1522 recommends <=30, above requires special evaluation; not a proven cause of 9000010"
 }
-
